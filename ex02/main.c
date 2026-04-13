@@ -7,20 +7,20 @@
 
 int main()
 {
-    // PORTD2 = button
-    // PORTB0 = led
+    // PORTD 2 = button
+    // PORTB 0 = led
 
     while(1)
     {
         // check if PORT 2 is being pressed
         if ((PIND & 0b100) == 0)
         {
-            // set PORTB at 0b00000001
+            // set PORTB 0 at 1
             PORTB |= 0b00000001;
         }
         else
         {
-            // set PORTB at 0b00000000
+            // set PORTB 0 at 0
             PORTB &= 0b11111110;
         }
     }
