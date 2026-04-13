@@ -1,4 +1,4 @@
-NAME = setup
+NAME = binary
 
 SRC = main.c
 

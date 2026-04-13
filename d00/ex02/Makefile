@@ -1,4 +1,4 @@
-NAME = setup
+NAME = lumos
 
 SRC = main.c
 

@@ -1,4 +1,4 @@
-NAME = setup
+NAME = hope
 
 SRC = main.c
 
