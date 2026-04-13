@@ -58,6 +58,8 @@ int main()
                 _delay_ms(30);
         }
 
+        PORTB &= 0b11110000;
+
         unsigned char binary1 = (count & 0b00000001);
         unsigned char binary2 = (count & 0b00000010);
         unsigned char binary4 = (count & 0b00000100);
