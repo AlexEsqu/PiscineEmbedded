@@ -2,8 +2,6 @@ NAME = setup
 
 SRC = main.c
 
-OBJ = $(patsubst %.c,%.o,$(SRC))
-ELF = $(patsubst %.c,%.elf,$(SRC))
 HEX = $(patsubst %.c,%.hex,$(SRC))
 BIN = $(patsubst %.c,%.bin,$(SRC))
 
@@ -13,12 +11,10 @@ OPEN_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
 
-
 COMPILE_FLAGS = -nostdlib -mmcu=$(CHIP) -Wall -Wextra -Werror -DF_CPU=$(F_CPU)
-LINK_FLAGS = -nostdlib -mmcu=$(CHIP)
+# LINK_FLAGS = -nostdlib -mmcu=$(CHIP)
 
-COMPILER = avr-gcc
-CONVERT_TO_BIN = avr-objcopy -O binary
+COMPILER = avr-gcc 
 CONVERT_TO_HEX = avr-objcopy -I binary -O ihex
 FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$<:i
 
@@ -29,27 +25,23 @@ all :
 
 hex:		$(HEX)
 
-# Flash hex file to the arduino board
-flash:		$(HEX)
+flash:		$(HEX) 
 			$(FLASH)
 
 clean:
-			rm -rf $(OBJ)
+			rm -rf $(BIN)
+			rm -rf $(HEX)
 
 
-# Compile into object files
-$(OBJ):		$(SRC)
+# Compile into binary files
+$(BIN):		$(SRC)
 			$(COMPILER) $(COMPILE_FLAGS) -c $< -o $@
 
-# Link into binary file
-$(ELF):		$(OBJ)
-			$(COMPILER) $(LINK_FLAGS) $^ -o $@
+# # Link into binary file
+# $(ELF):		$(BIN)
+# 			$(COMPILER) $(LINK_FLAGS) $^ -o $@
 
-# Convert into bin cuz the subject said to
-$(BIN):		$(ELF)
-			$(CONVERT_TO_BIN) $< $@
-
-# Convert from elf to hex to transfer through USB
+# Convert from binary to hex to transfer through USB
 $(HEX):		$(BIN)
 			$(CONVERT_TO_HEX) $< $@
 
