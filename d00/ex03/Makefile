@@ -22,24 +22,24 @@ COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -DF_CPU=$(F_CPU) -I$(AVR_LIB
 # 							cd $(AVR_LIBC_DIR) && make -j
 # 							touch $(AVR_LIBC_DIR)/.CACHETAG
 
-COMPILER = avr-gcc 
+COMPILER = avr-gcc
 CONVERT_TO_HEX = avr-objcopy -I binary -O ihex
-FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$<:i
+FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$(HEX):i
 
 
-all :		
+all :
 			make hex
 			make flash
 
 hex:		$(HEX)
 
-flash:		$(HEX) 
+flash:
 			$(FLASH)
 
 clean:
 			rm -rf $(BIN)
 			rm -rf $(HEX)
-	
+
 re:
 			make clean
 			make all
@@ -52,6 +52,3 @@ $(BIN):		$(SRC)
 # Convert from binary to hex to transfer through USB
 $(HEX):		$(BIN)
 			$(CONVERT_TO_HEX) $< $@
-
-
-

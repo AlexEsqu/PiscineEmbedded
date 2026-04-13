@@ -29,7 +29,7 @@ int main()
     {
         if (!(SW1 == 0) && !(SW2 == 0))
             continue;
-        
+
         if (!sw1_is_pressed && (SW1 == 0))
         {
             count++;
@@ -37,7 +37,7 @@ int main()
             while ((SW1 == 0))
                 _delay_ms(30);
         }
-        if (sw1_is_pressed && !(SW1 == 0)) 
+        if (sw1_is_pressed && !(SW1 == 0))
         {
             sw1_is_pressed = false;
             while ((SW1 == 0))
@@ -63,9 +63,9 @@ int main()
 
         // explicitly extracting all binary digit of the count
         // for those like me not really up to spec in binary
-        unsigned char binary1 = (count & 0b00000001);
-        unsigned char binary2 = (count & 0b00000010);
-        unsigned char binary4 = (count & 0b00000100);
+        unsigned char binary1 =  (count & 0b00000001);
+        unsigned char binary2 =  (count & 0b00000010);
+        unsigned char binary4 =  (count & 0b00000100);
         // binary8 is shifted because it'll be placed a lil awkwardly
         // at index 4 instead of 3
         unsigned char binary8 = ((count & 0b00001000) << 1);
@@ -73,6 +73,6 @@ int main()
         // setting the LEDS to their respective values
         PORTB |= binary1 | binary2 | binary4 | binary8;
     }
-    
+
     return (0);
 }

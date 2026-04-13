@@ -6,13 +6,13 @@ HEX = $(patsubst %.c,%.hex,$(SRC))
 BIN = $(patsubst %.c,%.bin,$(SRC))
 
 CHIP = atmega328p
-F_CPU = 16000000
+F_CPU = 16000000UL
 OPEN_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
 AVR_LIBC_DIR=/tmp/avr-libc
 
-COMPILE_FLAGS = -mmcu=$(CHIP) -I$(AVR_LIBC_DIR)/include -Wall -Wextra -Werror -DF_CPU=$(F_CPU)UL
+COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU) -I$(AVR_LIBC_DIR)/include -nostdlib
 
 # $(AVR_LIBC_DIR)/.CACHETAG:
 # 							rm -rf $(AVR_LIBC_DIR)
@@ -22,32 +22,33 @@ COMPILE_FLAGS = -mmcu=$(CHIP) -I$(AVR_LIBC_DIR)/include -Wall -Wextra -Werror -D
 # 							cd $(AVR_LIBC_DIR) && make -j
 # 							touch $(AVR_LIBC_DIR)/.CACHETAG
 
-COMPILER = avr-gcc 
+COMPILER = avr-gcc
 CONVERT_TO_HEX = avr-objcopy -I binary -O ihex
-FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$<:i
+FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$(HEX):i
 
 
-all :		
+all :
 			make hex
 			make flash
 
 hex:		$(HEX)
 
-flash:		$(HEX) 
+flash:
 			$(FLASH)
 
 clean:
 			rm -rf $(BIN)
 			rm -rf $(HEX)
 
+re:
+			make clean
+			make all
 
-# Compile into binary files
+
+# Compile into binary file
 $(BIN):		$(SRC)
 			$(COMPILER) $(COMPILE_FLAGS) $< -o $@
 
 # Convert from binary to hex to transfer through USB
 $(HEX):		$(BIN)
 			$(CONVERT_TO_HEX) $< $@
-
-
-

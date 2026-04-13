@@ -7,9 +7,9 @@ int main()
 {
     // Per Devboard Schema:
     // PORTB 0 = LED_D1
-    
+
     // set PORTB at 0x00000001
-    PORTB = 1;
+    PORTB |= 0b00000001;
 
     // loop to ensure it stays on (brutish I know)
     while (1) ;
