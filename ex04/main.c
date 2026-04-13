@@ -7,15 +7,6 @@
 //  ◦ displays this value in binary on LEDs D1 D2 D3 and D4 permanently.
 // You must use only the AVR registers ( DDRX, PORTX, PINX )
 
-#define SW1 (PIND << PB2)
-#define SW2 (PIND << PB4)
-
-bool   isPressed(int buttonAddress)
-{
-    return (buttonAddress == 0);
-}
-
-
 int main()
 {
     // Per Devboard Schema:
@@ -27,44 +18,58 @@ int main()
     // PORTB 4 = LED_D4
 
     // Initializing the buttons to their current states
-    bool sw1_is_pressed = isPressed(SW1);
-    bool sw2_is_pressed = isPressed(SW2);
-    int i = 0;
+    unsigned char sw1_is_pressed = false;
+    unsigned char sw2_is_pressed = false;
+    unsigned char count = 0;
 
     while (1)
     {
-        // check if SW1 is being pressed by reading bit at its address (PIND - 3)
+        // if (!(SW1 == 0) && !(SW2 == 0))
+        //     continue;
+        
+        // check if SW1 or SW2 are being pressed by reading bit at its address
         // source: ATmega328P p.101
-        if (!sw1_is_pressed && isPressed(SW1))
+        if (!sw1_is_pressed && (( PIND & (PIND << PD2)) == 0))
         {
-            i++;
+            count++;
             sw1_is_pressed = true;
-            _delay_ms(30);
+            while ((( PIND & (PIND << PD2)) == 0))
+                _delay_ms(30);
         }
-        if (sw1_is_pressed && !isPressed(SW1))
+        
+        if (sw1_is_pressed && !(( PIND & (PIND << PD2)) == 0)) 
         {
             sw1_is_pressed = false;
-            _delay_ms(30);
+            while ((( PIND & (PIND << PD2)) == 0))
+                _delay_ms(30);
         }
-        if (!sw2_is_pressed && isPressed(SW2))
+
+        if (!sw2_is_pressed && ((PIND & (PIND << PD4)) == 0))
         {
-            i--;
+            count--;
             sw2_is_pressed = true;
-            _delay_ms(30);
+            while (((PIND & (PIND << PD4)) == 0))
+                _delay_ms(30);
         }
-        if (sw2_is_pressed && !isPressed(SW2))
+        if (sw2_is_pressed && !((PIND & (PIND << PD4)) == 0))
         {
             sw2_is_pressed = false;
-            _delay_ms(30);
+            while (((PIND & (PIND << PD4)) == 0))
+                _delay_ms(30);
         }
 
-        {
-            // toggle PORTB at place 0
-            PORTB = PORTB ^ (1 << 0);
+        unsigned char binary1 = (count & 0b00000001);
+        unsigned char binary2 = (count & 0b00000010);
+        unsigned char binary4 = (count & 0b00000100);
+        unsigned char binary8 = ((count & 0b00001000) << 1);
 
-            // sleep some to avoid bounce 
-            _delay_ms(30);
-        }
+        unsigned char lightLed = 0;
+        lightLed |= binary1;
+        lightLed |= binary2;
+        lightLed |= binary4;
+        lightLed |= binary8;
+
+        PORTB |= lightLed;
     }
     
     return (0);

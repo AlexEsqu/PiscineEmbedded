@@ -23,14 +23,17 @@ int main()
             PORTB = PORTB ^ (1 << 0);
 
             // sleep some to avoid bounce 
-            _delay_ms(30);
+            while (((PIND & 0b100) == 0))
+                _delay_ms(30);
 
             is_pressed = true;
         }
         if (is_pressed && !((PIND & 0b100) == 0))
         {
             // sleep some to avoid bounce 
-            _delay_ms(30);
+            while (((PIND & 0b100) == 0))
+                _delay_ms(30);
+
             is_pressed = false;
         }
     }
