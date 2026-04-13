@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/13 21:47:36 by mkling            #+#    #+#             */
+/*   Updated: 2026/04/13 21:47:41 by mkling           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "avr/io.h"
 
 // You must write a program that turns on LED D1 (PB0) when button SW1 (PD2)
@@ -10,6 +22,10 @@ int main()
     // Per Devboard Schema:
     // PORTD 2 = button SW1
     // PORTB 0 = LED_D1
+
+    DDRB |= 1;
+    DDRD &= ~(1 << 2);
+    PORTD |= (1 << 2);
 
     while (1)
     {

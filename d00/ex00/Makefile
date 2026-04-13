@@ -16,7 +16,7 @@ COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU)
 
 COMPILER = avr-gcc
 CONVERT_TO_HEX = avr-objcopy -I binary -O ihex
-FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$<:i
+FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$(HEX):i
 
 
 all :
@@ -25,7 +25,7 @@ all :
 
 hex:		$(HEX)
 
-flash:		$(HEX)
+flash:
 			$(FLASH)
 
 clean:

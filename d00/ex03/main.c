@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/13 21:47:46 by mkling            #+#    #+#             */
+/*   Updated: 2026/04/13 21:47:48 by mkling           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "avr/io.h"
 #include "util/delay.h"
 
@@ -11,11 +23,15 @@ int main()
     // PORTD 2 = button SW1
     // PORTB 0 = LED_D1
 
-    bool is_pressed = false;
+    DDRB |= 1;
+    DDRD &= ~(1 << 2);
+    PORTD |= (1 << 2);
+
+    bool is_pressed = ((PIND & 0b100) == 0);
 
     while (1)
     {
-        // check if SW1 is being pressed by reading bit at its address (PIND - 3)
+        // check if SW1 is being pressed by reading bit at its address (PIND 3)
         // source: ATmega328P p.101
         if (!is_pressed && ((PIND & 0b100) == 0))
         {

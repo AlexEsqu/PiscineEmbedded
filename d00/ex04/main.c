@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/13 21:47:52 by mkling            #+#    #+#             */
+/*   Updated: 2026/04/13 21:47:53 by mkling           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "avr/io.h"
 #include "util/delay.h"
 
@@ -19,6 +31,10 @@ int main()
     // PORTB 1 = LED_D2
     // PORTB 2 = LED_D3
     // PORTB 4 = LED_D4
+
+    DDRB |= 0b00010111;
+    DDRD &= ~(1 << 2) | (1 << 4);
+    PORTD |= (1 << 2) | (1 << 4);
 
     // Initializing the buttons to their current states
     unsigned char sw1_is_pressed = (SW1 == 0);
