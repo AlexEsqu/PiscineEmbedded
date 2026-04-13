@@ -5,7 +5,11 @@
 
 int main()
 {
+    // set PORTB at 0x00000001
     PORTB = 1;
+
+    // loop to ensure it stays on (brutish I know)
     while(1) ;
+    
     return (0);
 }
