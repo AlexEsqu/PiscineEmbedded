@@ -7,12 +7,15 @@
 
 int main()
 {
-    // PORTD 2 = button
-    // PORTB 0 = led
+    // Per Devboard Schema:
+    // PORTD 2 = button SW1
+    // PORTB 0 = LED_D1
 
-    while(1)
+    while (1)
     {
-        // check if PORT 2 is being pressed
+        // check if SW1 is being pressed by reading bit at its address D3
+        // Using PIN instead of PORT cuz reading instead of writing
+        // source: ATmega328P p.101
         if ((PIND & 0b100) == 0)
         {
             // set PORTB 0 at 1

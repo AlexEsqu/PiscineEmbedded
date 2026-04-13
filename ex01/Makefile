@@ -43,7 +43,7 @@ clean:
 
 # Compile into binary files
 $(BIN):		$(SRC)
-			$(COMPILER) $(COMPILE_FLAGS) -c $< -o $@
+			$(COMPILER) $(COMPILE_FLAGS) $< -o $@
 
 # Convert from binary to hex to transfer through USB
 $(HEX):		$(BIN)

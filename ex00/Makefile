@@ -33,9 +33,9 @@ clean:
 			rm -rf $(HEX)
 
 
-# Compile into binary files
+# Compile into binary file
 $(BIN):		$(SRC)
-			$(COMPILER) $(COMPILE_FLAGS) -c $< -o $@
+			$(COMPILER) $(COMPILE_FLAGS) $< -o $@
 
 # # Link into binary file
 # $(ELF):		$(BIN)
