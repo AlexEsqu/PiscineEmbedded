@@ -6,7 +6,7 @@
 /*   By: mkling <mkling@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 21:47:52 by mkling            #+#    #+#             */
-/*   Updated: 2026/04/14 09:40:47 by mkling           ###   ########.fr       */
+/*   Updated: 2026/04/14 12:06:49 by mkling           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,15 @@ int main()
     // PORTB 2 = LED_D3
     // PORTB 4 = LED_D4
 
+    // setting up the LEDs to write data
     DDRB |= 0b00010111;
-    DDRD &= ~(1 << 2) | (1 << 4);
-    PORTD |= (1 << 2) | (1 << 4);
+    // equivalent to
+    // DDRB =| (1 << PB0) | (1 << PB1) | (1 << PB2) | (1 << PB4)
+
+    // setting up buttons to read data
+    DDRD &= ~(1 << PD2) | (1 << PD4);
+    // initializing buttons to 0
+    PORTD |= (1 << PD2) | (1 << PD4);
 
     // Initializing the buttons to their current states
     unsigned char sw1_was_pressed = isBeingPressed(PIND, PD2);

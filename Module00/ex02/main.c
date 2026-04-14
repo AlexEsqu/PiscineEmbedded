@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*   By: mkling <mkling@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 21:47:36 by mkling            #+#    #+#             */
-/*   Updated: 2026/04/13 21:47:41 by mkling           ###   ########.fr       */
+/*   Updated: 2026/04/14 12:04:33 by mkling           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ int main()
     // PORTD 2 = button SW1
     // PORTB 0 = LED_D1
 
-    DDRB |= 1;
-    DDRD &= ~(1 << 2);
-    PORTD |= (1 << 2);
+    DDRB |= (1 << PB0);
+    DDRD &= ~(1 << PD2);
+    PORTD |= (1 << PD2);
 
     while (1)
     {
@@ -43,6 +43,6 @@ int main()
             PORTB &= 0b11111110;
         }
     }
-    
+
     return (0);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*   By: mkling <mkling@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 21:47:46 by mkling            #+#    #+#             */
-/*   Updated: 2026/04/13 21:47:48 by mkling           ###   ########.fr       */
+/*   Updated: 2026/04/14 12:04:52 by mkling           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ int main()
     // PORTD 2 = button SW1
     // PORTB 0 = LED_D1
 
-    DDRB |= 1;
-    DDRD &= ~(1 << 2);
-    PORTD |= (1 << 2);
+    DDRB |= (1 << PB0);
+    DDRD &= ~(1 << PD2);
+    PORTD |= (1 << PD2);
 
     bool is_pressed = ((PIND & 0b100) == 0);
 
@@ -38,7 +38,7 @@ int main()
             // toggle PORTB at place 0
             PORTB = PORTB ^ (1 << 0);
 
-            // sleep some to avoid bounce 
+            // sleep some to avoid bounce
             while (((PIND & 0b100) == 0))
                 _delay_ms(30);
 
@@ -46,13 +46,13 @@ int main()
         }
         if (is_pressed && !((PIND & 0b100) == 0))
         {
-            // sleep some to avoid bounce 
+            // sleep some to avoid bounce
             while (((PIND & 0b100) == 0))
                 _delay_ms(30);
 
             is_pressed = false;
         }
     }
-    
+
     return (0);
 }
