@@ -41,7 +41,7 @@ int main()
 
 	// Set the duty cycle of the LED, meaning the count where it stops
 	// Shoudl be TOP / 10 for 10%
-	OCR1A = topOfCounter / 10;
+	OCR1A = topOfCounter * 0.9;
 
 	// Initialize the timer at 0 (but should be base behaviour)
 	TCNT1 = 0;
