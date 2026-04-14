@@ -17,9 +17,9 @@ delay_500ms:
 /* frame size = 4 */
 /* stack size = 6 */
 .L__stack_usage = 6
-	ldi r24,lo8(32)
-	ldi r25,lo8(-95)
-	ldi r26,lo8(7)
+	ldi r24,lo8(-86)
+	ldi r25,lo8(17)
+	ldi r26,lo8(4)
 	ldi r27,0
 	std Y+1,r24
 	std Y+2,r25

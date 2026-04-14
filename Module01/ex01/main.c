@@ -12,7 +12,7 @@ int main()
 	// initializing LED D2 (PB1) as output
 	DDRB |= 0b00000010;
 
-	// Setting up Timer1 in CTC Mode and Toggle OC1A/OC1B submode
+	// Setting up Timer1 in CTC Mode and Toggle OC1A submode
 		// Because it will toggle OC1A when reaching the counter TOP
 		// And the LED2 I want to toggle is *coincidentally* on OC1A
 		// source: datasheet p.131 - 132
@@ -31,7 +31,7 @@ int main()
 
 	// According to Clock Select Bit Description Table 16-5 p. 143
 	// Prescaling can be set at 256  with CS12  at 1 and CS11 and CS10 at 0
-		// This mean Timer1 will be slowed to 16MHz/256 = 62 500 Hz
+		// This mean Timer1 will be slowed to 16 000 000 Hz / 256 = 62 500 Hz
 		// So my counter increments every 0.000016 seconds
 		// Meaning I can get 0.5 seconds by waiting 31250 clocks
 

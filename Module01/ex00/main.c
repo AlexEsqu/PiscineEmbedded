@@ -9,29 +9,39 @@
 // • You must use only the AVR registers ( DDRX, PORTX, PINX ).
 
 
-// The devboard runs at 16MHz
-// This busy loop in ASM is
-// .L4:
-// 		sbi 0x5,1
-// 		std Y+2,r19
-// 		std Y+1,r18
+// When converted to ASM (see make asm rule), the loop amounts to:
+// .L3:
+// 	ldd r24,Y+1
+// 	ldd r25,Y+2
+// 	ldd r26,Y+3
+// 	ldd r27,Y+4
+// 	sbiw r24,1
+// 	sbc r26,__zero_reg__
+// 	sbc r27,__zero_reg__
+// 	std Y+1,r24
+// 	std Y+2,r25
+// 	std Y+3,r26
+// 	std Y+4,r27
 // .L2:
-// 		ldd r24,Y+1
-// 		ldd r25,Y+2
-// 		or r24,r25
-// 		breq .L4
-// Per datasheet p.625:
-// - sbi take 2 clocks
-// - std take 2 clocks
-// - ldd take 2 clocks
-// - or  take 1 clock
-// - bre take 1 clock
-// So something like 12 clocks cycle per loop
+// 	ldd r24,Y+1
+// 	ldd r25,Y+2
+// 	ldd r26,Y+3
+// 	ldd r27,Y+4
+// 	sbiw r24,0
+// 	cpc r26,__zero_reg__
+// 	cpc r27,__zero_reg__
+// 	brne .L3
 
+// Using the Instruction Set Summary p.625 of the datasheet,
+// This is around 35 cycles (not accounting for loop overhead cuz this is ex00)
 
 static inline void delay_500ms(void)
 {
-	volatile unsigned long i = 500000UL;
+	// How many time should I wast 35 clock cycles to reach 500ms ?
+	// => secondsPerClockCycle * cyclePerLoop * numberOfLoops  = 0.5 seconds
+	// => numberOfLoops = ((1 / F_CPU) * 35) / 0.5
+	// => numberOfLoops = ( 0.5 * F_CPU ) / 35
+	volatile unsigned long i = (F_CPU / 2) / 35;
 
 	while (i)
 	{
@@ -43,7 +53,7 @@ int main()
 {
 	// setting LED D2 (PB1) as output
 	DDRB |= (1 << PB1);
-	// initializing LED D2 (PB1) at 0 (turned off)
+	// initializing LED D2 (PB1) at 0 (turned off), made by default
 	// PORTB &= ~(1 << PB1);
 
 	while (1)
