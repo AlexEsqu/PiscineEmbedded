@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mkling <mkling@learner.42.tech>            +#+  +:+       +#+        */
+/*   By: mkling <mkling@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 21:47:52 by mkling            #+#    #+#             */
-/*   Updated: 2026/04/13 21:47:53 by mkling           ###   ########.fr       */
+/*   Updated: 2026/04/14 09:33:00 by mkling           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,25 @@
 
 #define SW1 (PIND & (PIND << PD2))
 #define SW2 (PIND & (PIND << PD4))
+
+void displayNumber(int num)
+{
+    // resetting all the LEDS to 0, leaving the rest of PORTB alone
+    PORTB &= 0b11101000;
+
+    // explicitly extracting all binary digit of the count
+    // for those like me not really up to spec in binary
+    unsigned char binary1 =  (num & 0b00000001);
+    unsigned char binary2 =  (num & 0b00000010);
+    unsigned char binary4 =  (num & 0b00000100);
+    // binary8 is shifted because it'll be placed a lil awkwardly
+    // at index 4 instead of 3
+    unsigned char binary8 = ((num & 0b00001000) << 1);
+
+    // setting the LEDS to their respective values
+    PORTB |= binary1 | binary2 | binary4 | binary8;
+}
+
 
 int main()
 {
@@ -74,20 +93,7 @@ int main()
                 _delay_ms(30);
         }
 
-        // resetting all the LEDS to 0, leaving the rest of PORTB alone
-        PORTB &= 0b11101000;
-
-        // explicitly extracting all binary digit of the count
-        // for those like me not really up to spec in binary
-        unsigned char binary1 =  (count & 0b00000001);
-        unsigned char binary2 =  (count & 0b00000010);
-        unsigned char binary4 =  (count & 0b00000100);
-        // binary8 is shifted because it'll be placed a lil awkwardly
-        // at index 4 instead of 3
-        unsigned char binary8 = ((count & 0b00001000) << 1);
-
-        // setting the LEDS to their respective values
-        PORTB |= binary1 | binary2 | binary4 | binary8;
+        displayNumber(count);
     }
 
     return (0);
