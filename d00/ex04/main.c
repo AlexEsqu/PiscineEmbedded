@@ -6,7 +6,7 @@
 /*   By: mkling <mkling@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/13 21:47:52 by mkling            #+#    #+#             */
-/*   Updated: 2026/04/14 09:38:40 by mkling           ###   ########.fr       */
+/*   Updated: 2026/04/14 09:40:47 by mkling           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,8 +58,8 @@ int main()
     PORTD |= (1 << 2) | (1 << 4);
 
     // Initializing the buttons to their current states
-    unsigned char sw1_is_pressed = isBeingPressed(PIND, PD2);
-    unsigned char sw2_is_pressed = isBeingPressed(PIND, PD4);
+    unsigned char sw1_was_pressed = isBeingPressed(PIND, PD2);
+    unsigned char sw2_was_pressed = isBeingPressed(PIND, PD4);
     unsigned char count = 0;
 
     while (1)
@@ -67,30 +67,30 @@ int main()
         if (!isBeingPressed(PIND, PD2) && !isBeingPressed(PIND, PD4))
             continue;
 
-        if (!sw1_is_pressed && isBeingPressed(PIND, PD2))
+        if (!sw1_was_pressed && isBeingPressed(PIND, PD2))
         {
             count++;
-            sw1_is_pressed = true;
+            sw1_was_pressed = true;
             while (isBeingPressed(PIND, PD2))
                 _delay_ms(30);
         }
-        if (sw1_is_pressed && !isBeingPressed(PIND, PD2))
+        if (sw1_was_pressed && !isBeingPressed(PIND, PD2))
         {
-            sw1_is_pressed = false;
+            sw1_was_pressed = false;
             while (isBeingPressed(PIND, PD2))
                 _delay_ms(30);
         }
 
-        if (!sw2_is_pressed && isBeingPressed(PIND, PD4))
+        if (!sw2_was_pressed && isBeingPressed(PIND, PD4))
         {
             count--;
-            sw2_is_pressed = true;
+            sw2_was_pressed = true;
             while (isBeingPressed(PIND, PD4))
                 _delay_ms(30);
         }
-        if (sw2_is_pressed && !isBeingPressed(PIND, PD4))
+        if (sw2_was_pressed && !isBeingPressed(PIND, PD4))
         {
-            sw2_is_pressed = false;
+            sw2_was_pressed = false;
             while (isBeingPressed(PIND, PD4))
                 _delay_ms(30);
         }
