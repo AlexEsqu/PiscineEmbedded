@@ -30,17 +30,16 @@ int main()
 	TCCR1A = 0b10100010;
 	TCCR1B = 0b00010100;
 
-	// Set the TOP for the Timer:
-	// Toggle every 500ms (so that the LED is tuned on AND off every minute
-	// = F_CPU / (howManyTogglePreFrequency * prescaler * blinkFrequency) - oneCuzIndexingAt0
-	// Here 16 000 000 / (2 * 256 * 1) - 1 = 31499
-	int topOfCounter = F_CPU / (2 * 256 * 1) - 1;
+	// Set Timer TOP at 1second
+	// Fast PWM period is (TOP + 1), so (F_CPU / prescaler / target_hz) - indexingAt0.
+	unsigned int topOfCounter = (F_CPU / 256UL) - 1;
+
+	// Set the duty cycle of the LED where clears the LED
+	unsigned int tenPercentOfTop = topOfCounter / 10;
 
 	ICR1 = topOfCounter;
 
-	// Set the duty cycle of the LED, meaning the count where it stops
-	// Shoudl be TOP / 10 for 10%
-	OCR1A = topOfCounter / 10;
+	OCR1A = tenPercentOfTop;
 
 	// Initialize the timer at 0 (but should be base behaviour)
 	TCNT1 = 0;

@@ -45,10 +45,8 @@ int main()
 	TCCR1B = 0b00010100;
 
 	// Set the TOP for the Timer:
-	// Toggle every 500ms (so that the LED is tuned on AND off every minute
-	// = F_CPU / (howManyTogglePreFrequency * prescaler * blinkFrequency) - oneCuzIndexingAt0
-	// Here 16 000 000 / (2 * 256 * 1) - 1 = 31499
-	unsigned int topOfCounter = F_CPU / (2 * 256 * 1) - 1;
+	// Toggle every 1seconds
+	unsigned int topOfCounter = (F_CPU / 256UL) - 1;
     unsigned int tenPercentOfTop = topOfCounter / 10;
 
 	ICR1 = topOfCounter;
