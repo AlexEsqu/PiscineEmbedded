@@ -104,3 +104,7 @@ Same as Phase correct but more precise when chaning the TOP value as counter is 
 # Frequency calculations
 
 OCR1A = \frac{F\_CPU}{2 \times prescaler \times blink\_frequency} - 1
+
+
+
+WARNING assigning the prescaler launches the timer
