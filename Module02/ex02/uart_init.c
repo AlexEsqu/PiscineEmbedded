@@ -17,8 +17,8 @@ void uart_init()
 	setBaudRate();
 	
 	UCSR0A = (1 << U2X0);					// set DOUBLE SPEED to lessen rounding error
-	UCSR0B = (1 << TXEN0); 					// enable transmit
-	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);	// set bit/frame
+	UCSR0B = (1 << TXEN0) | (1 << RXEN0); 					// enable receiving
+	UCSR0C = (1 << USBS0) | (3 << UCSZ00);	// set stop bit and bit/frame
 }
 
 
@@ -36,7 +36,7 @@ void uart_init()
 
 // UCSR0C - USART Control and Status Register n C
 // 	UMSEL01		UMSEL00		UPM01		UPM00		USBS0		UCSZ01		UCSZ00		UCPOL0
-//	0			0			0			0			0			1			1			0	
+//	0			0			1			0			0			1			1			0	
 //	[set sync/async mode  ]	[ set parity mode     ]	[ stopbit ]	[set bits/frames      ]	[clock pol	]
 
 // UBRR0H - USART Baud Rate Register High

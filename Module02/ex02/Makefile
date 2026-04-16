@@ -2,7 +2,8 @@ NAME = affZ
 
 SRC = 	main.c \
 		uart_init.c \
-		uart_tx.c
+		uart_tx.c \
+		uart_rx.c
 
 INC_DIR = inc
 OBJ_DIR = obj
@@ -35,8 +36,7 @@ flash:
 asm:		$(ASM)
 
 clean:
-			rm -f $(BIN)
-			rm -f $(HEX)
+			rm -rf $(OBJ_DIR)
 
 re:			clean all
 

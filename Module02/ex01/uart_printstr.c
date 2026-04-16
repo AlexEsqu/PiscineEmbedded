@@ -3,5 +3,8 @@
 
 void uart_printstr(const char* str)
 {
-    
+    while (*str)
+    {
+        uart_tx(*str++);
+    }
 }

@@ -35,8 +35,7 @@ flash:
 asm:		$(ASM)
 
 clean:
-			rm -f $(BIN)
-			rm -f $(HEX)
+			rm -rf $(OBJ_DIR)
 
 re:			clean all
 

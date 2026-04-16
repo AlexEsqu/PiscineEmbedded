@@ -35,11 +35,11 @@ typedef enum
     CLK_DIV1024         = 0b101,
     CLK_EXT_FALLING     = 0b110,
     CLK_EXT_RISING      = 0b111
-} e_prescaler;
+} e_divider;
 
 // Table 16-1 and 16-2 Compare Output Mode p.140-141
 typedef enum {
-    CMP_DISCONNECTED    = 0b00,
+    CMP_DISCONNECT      = 0b00,
     CMP_TOGGLE          = 0b01,
     CMP_CLEAR           = 0b10,
     CMP_SET             = 0b11 

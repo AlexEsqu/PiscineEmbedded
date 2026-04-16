@@ -1,21 +1,22 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <utils/delay.h>
+#include "libalex_avr.h"
 
-// • You must write a function uart_printstr that will be called every 2 seconds to
-// display Hello World! on the serial port.
-// • The MCU’s UART must be configured to 115200 8N1.
-// • The infinite loop of the program should remain empty.
+// • Now you will have to write a function uart_rx that waits to receive a character on
+// the MCU’s UART port and then returns it.
+// • You must write a program that uses your uart_rx function.
+// • It should write the received characters from uart_rx to the serial port using your
+// uart_tx function (ex00).
 
-// void uart_printstr(const char* str)
+// char uart_rx(void);
 
 
 int main()
 {
-
+	uart_init();
+	
 	while (1)
 	{
-		;
+		char recv = uart_rx();
+		uart_tx(recv);
 	}
 }
 
