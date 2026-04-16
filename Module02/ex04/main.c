@@ -38,13 +38,16 @@ bool bufferHasSpace(int bufferIndex)
 	return true;
 }
 
-void uart_hex(char c) {
+void uart_hex(uint32_t x) {
 	const char *hex = "0123456789ABCDEF";
-	int hi = c >> 4;
-	int lo = c & 0xf;
+	char buf[sizeof(uint32_t) * 2 + 1];
 
-	uart_tx(hex[hi]);
-	uart_tx(hex[lo]);
+	buf[sizeof(uint32_t) * 2] = '\0';
+	for (unsigned int i = 0; i < sizeof(uint32_t) * 2; i++) {
+		buf[sizeof(uint32_t) * 2 - i - 1] = hex[(x & 0xf)];
+		x >>= 4;
+	}
+	uart_printstr(buf);
 	uart_tx('\n');
 }
 
@@ -75,7 +78,8 @@ void handleUserTyping(char* buffer, int* bufferIndex, e_content mode, e_state* s
 		case '\x1b':
 		{
 			(void)uart_rx(); // [ character
-			for (char c = uart_rx(); c >= '0' && c <= '9' && c == ';';);
+			for (char c = uart_rx(); c >= '0' && c <= '9' && c == ';';)
+				;
 			break;
 		}
 		default:
@@ -108,6 +112,32 @@ void	bzeroStr(char *str, int strSize)
 	}
 }
 
+uint32_t fnv1a(const uint8_t *data) {
+    uint32_t hash = 0x811C9DC5; // offset basis
+
+    for (uint32_t i = 0; data[i]; i++) {
+        hash ^= data[i];
+        hash *= 0x01000193; // FNV prime
+    }
+
+    return hash;
+}
+
+void __attribute__((signal)) __vector_11 (void)
+{
+	PORTB ^= 0b00010111;
+}
+
+void	makeBlink()
+{
+	OCR1A = F_CPU / (2 * 256 * 1) - 1;
+	
+	timer_init(TIMER_MODE_CTC, TOP_OCR1A, CMP_SET, CMP_DISCONNECT);
+	SREG |= (1 << 7);
+	TIMSK1 |= (1 << OCIE1A);
+	TCCR1B |= 0b00000101;
+}
+
 int main()
 {
 	uart_init();
@@ -115,9 +145,11 @@ int main()
 	char	buffer[BUFFER_SIZE];
 	int		bufferIndex = 0;
 	char*	login = "mkling";
-	char*	pwd = "superSecure";
+	uint32_t pwd = 0x8E637645; // 
 
 	bzeroStr(buffer, BUFFER_SIZE);
+
+	
 
 	while (1)
 	{
@@ -143,13 +175,12 @@ int main()
 				else
 					state = WRONG;
 				bzeroStr(buffer, BUFFER_SIZE);
+				bufferIndex = 0;
 				break;
 			}
 			case PROMPT_PWD:
 			{
 				uart_printstr("\t\tPassword:");
-				bufferIndex = 0;
-				bzeroStr(buffer, BUFFER_SIZE);
 				state = AWAIT_PWD;
 				break;
 			}
@@ -160,11 +191,16 @@ int main()
 			}
 			case VERIF_PWD:
 			{
-				uart_printstr(buffer);
-				if (isIdentical(buffer, pwd))
+				if (fnv1a((uint8_t *)buffer) == pwd)
+				{
 					state = CORRECT;
+					uart_printstr("\r\n\r\n\t\t<Welcome Text>\r\n");
+					makeBlink();
+				}
 				else
 					state = WRONG;
+				bzeroStr(buffer, BUFFER_SIZE);
+				bufferIndex = 0;
 				break;
 			}
 			case WRONG:
@@ -175,8 +211,6 @@ int main()
 			}
 			case CORRECT:
 			{
-				uart_printstr("\r\n\r\n\t\tCorrect!!!\r\n");
-				state = PROMPT_LOGIN;
 				break;
 			}
 		}

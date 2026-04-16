@@ -42,6 +42,9 @@ clean:
 
 re:			clean all
 
+screen: all
+			screen /dev/ttyUSB0 115200
+
 
 # Compile into binary file
 $(BIN):		$(SRC)
