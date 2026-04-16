@@ -12,7 +12,7 @@ OPEN_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
 
-COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -DF_CPU=$(F_CPU)
+COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU)
 
 COMPILER = avr-gcc
 CONVERT_TO_HEX = avr-objcopy -O ihex
