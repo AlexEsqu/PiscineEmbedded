@@ -66,7 +66,7 @@ void uart_init()
 	setBaudRate();
 	
 	UCSR0A = (1 << U2X0);					// set DOUBLE SPEED to lessen rounding error
-	UCSR0B = (1 << RXEN0) | (1 << TXEN0); 	// enable recv and transmit
+	UCSR0B = (1 << TXEN0); 				// enable transmit
 	UCSR0C = (1 << USBS0) | (3 << UCSZ00);	// set stop bit and bit/frame
 }
 
@@ -81,7 +81,6 @@ void uart_tx(unsigned char c)
 }
 
 
-
 int main()
 {
 	uart_init();
@@ -89,6 +88,6 @@ int main()
 	while (1)
 	{
 		uart_tx('Z');
-		_delay_ms(10);
+		_delay_ms(1000);
 	}
 }
