@@ -18,7 +18,6 @@ char transformForSubject(char c)
 // specific function name which is automatically launched when USART is set
 // (which is when data has been received)
 // see 20.7.3 Receive Compete Flag and Interrupt & Table 12-1 of interrupts p. 66
-// 
 void __attribute__((signal)) __vector_18 (void)
 {
 	char recv = UDR0;

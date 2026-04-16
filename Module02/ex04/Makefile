@@ -1,8 +1,11 @@
-NAME = affZ
+NAME = toUpLo
 
 SRC = 	main.c \
 		uart_init.c \
-		uart_tx.c
+		uart_tx.c \
+		uart_rx.c \
+		uart_printstr.c \
+		timer_init.c \
 
 INC_DIR = inc
 OBJ_DIR = obj
