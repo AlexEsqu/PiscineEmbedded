@@ -1,9 +1,15 @@
-NAME = blinker
+NAME = affZ
 
-SRC = main.c
+SRC = 	main.c \
+		uart_init.c \
+		uart_tx.c
 
-HEX = $(patsubst %.c,%.hex,$(SRC))
-BIN = $(patsubst %.c,%.bin,$(SRC))
+INC_DIR = inc
+OBJ_DIR = obj
+
+BIN = $(OBJ_DIR)/$(NAME).bin
+HEX = $(OBJ_DIR)/$(NAME).hex
+ASM = $(OBJ_DIR)/$(NAME).asm
 
 CHIP = atmega328p
 F_CPU = 16000000UL
@@ -11,35 +17,39 @@ OPEN_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
 
-COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra  -Werror -Os -DF_CPU=$(F_CPU)
-
 COMPILER = avr-gcc
+COMPILE_FLAGS = -mmcu=$(CHIP) -I$(INC_DIR) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU) 
+
 CONVERT_TO_HEX = avr-objcopy -O ihex
+
 FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$(HEX):i
 
 
-all :
-			make hex
-			make flash
+all :		hex flash
 
 hex:		$(HEX)
 
 flash:
 			$(FLASH)
 
-clean:
-			rm -rf $(BIN)
-			rm -rf $(HEX)
+asm:		$(ASM)
 
-re:
-			make clean
-			make all
+clean:
+			rm -f $(BIN)
+			rm -f $(HEX)
+
+re:			clean all
 
 
 # Compile into binary file
 $(BIN):		$(SRC)
-			$(COMPILER) $(COMPILE_FLAGS) $< -o $@
+			mkdir -p $(OBJ_DIR)
+			$(COMPILER) $(COMPILE_FLAGS) $^ -o $@
 
 # Convert from binary to hex to transfer through USB
 $(HEX):		$(BIN)
 			$(CONVERT_TO_HEX) $< $@
+
+# Compile into assembler file
+$(ASM): 	$(SRC)
+			$(COMPILER) $(COMPILE_FLAGS) -S $^ -o $@

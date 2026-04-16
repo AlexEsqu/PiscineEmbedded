@@ -11,7 +11,9 @@
 
 int main()
 {
-	
+	uart_init();
+	timer_init();
+
 	while (1)
 	{
 		;
