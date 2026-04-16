@@ -1,4 +1,4 @@
-NAME = helloWorld
+NAME = toUpLo
 
 SRC = 	main.c \
 		uart_init.c \

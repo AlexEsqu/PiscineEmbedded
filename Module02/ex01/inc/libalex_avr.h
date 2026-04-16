@@ -53,7 +53,7 @@ void timer_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA,
 
 void uart_init();
 
-void uart_tx(unsigned char c);
+void uart_tx(char c);
 void uart_printstr(const char* str);
 
 

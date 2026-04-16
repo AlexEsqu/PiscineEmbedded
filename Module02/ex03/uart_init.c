@@ -17,12 +17,12 @@ void uart_init()
 	setBaudRate();
 	
 	UCSR0A = (1 << U2X0);					// set DOUBLE SPEED to lessen rounding error
-	UCSR0B = (1 << TXEN0); 					// enable transmit
+	UCSR0B = (1 << TXEN0) | (1 << RXEN0); 					// enable transmit
 	UCSR0C = (1 << USBS0) | (3 << UCSZ00);	// set stop bit and bit/frame
 }
 
 
-// View of the USART register:
+// View of the USART registers:
 
 // UCSR0A - USART Control and Status Register n A
 // 	RXCn		TXCn		UDREn		FEn			DORn		UPEn		U2Xn		MPCMn

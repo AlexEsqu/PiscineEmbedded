@@ -7,8 +7,8 @@
 # define BAUDRATE 115200
 
 void uart_init();
-void uart_tx(unsigned char c);
-unsigned char uart_rx();
+void uart_tx(char c);
+char uart_rx();
 
 
 #endif

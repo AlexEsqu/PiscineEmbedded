@@ -1,4 +1,4 @@
-NAME = affZ
+NAME = echo
 
 SRC = 	main.c \
 		uart_init.c \

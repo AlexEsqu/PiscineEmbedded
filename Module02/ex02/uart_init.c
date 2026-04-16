@@ -22,7 +22,7 @@ void uart_init()
 }
 
 
-// Overview of the USART register and their use:
+// View of the USART registers:
 
 // UCSR0A - USART Control and Status Register n A
 // 	RXCn		TXCn		UDREn		FEn			DORn		UPEn		U2Xn		MPCMn
