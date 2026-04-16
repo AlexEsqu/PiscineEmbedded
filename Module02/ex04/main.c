@@ -112,6 +112,7 @@ void	bzeroStr(char *str, int strSize)
 	}
 }
 
+// hashing function, completely unnecessary, but I promised Serghei
 uint32_t fnv1a(const uint8_t *data) {
     uint32_t hash = 0x811C9DC5; // offset basis
 
@@ -144,12 +145,9 @@ int main()
 	e_state	state = PROMPT_LOGIN;
 	char	buffer[BUFFER_SIZE];
 	int		bufferIndex = 0;
+	bzeroStr(buffer, BUFFER_SIZE);
 	char*	login = "mkling";
 	uint32_t pwd = 0x8E637645; // 
-
-	bzeroStr(buffer, BUFFER_SIZE);
-
-	
 
 	while (1)
 	{
@@ -205,7 +203,7 @@ int main()
 			}
 			case WRONG:
 			{
-				uart_printstr("\r\n\r\n\t\tBOOOH, WRONG PASSWORD!!\r\n");
+				uart_printstr("\r\n\r\n\t\tBOOOH, WRONG!!\r\n");
 				state = PROMPT_LOGIN;
 				break;
 			}
