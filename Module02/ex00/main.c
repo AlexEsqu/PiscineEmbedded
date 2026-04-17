@@ -1,7 +1,3 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-
 #include "libalex_avr.h"
 
 // • The AVR ATmega328P microcontroller has 1 UART device that you must use in

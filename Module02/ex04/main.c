@@ -33,7 +33,7 @@ typedef enum
 
 bool bufferHasSpace(int bufferIndex)
 {
-	if (bufferIndex >= BUFFER_SIZE)
+	if (bufferIndex > BUFFER_SIZE - 1)
 		return false;
 	return true;
 }

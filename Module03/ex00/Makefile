@@ -1,11 +1,14 @@
-NAME = login
+NAME = Campbell
 
 SRC = 	main.c \
 		uart_init.c \
 		uart_tx.c \
 		uart_rx.c \
 		uart_printstr.c \
+		bitshift.c \
 		timer_init.c \
+		delay.c
+
 
 INC_DIR = inc
 OBJ_DIR = obj
@@ -41,9 +44,6 @@ clean:
 			rm -rf $(OBJ_DIR)
 
 re:			clean all
-
-screen: all
-			screen /dev/ttyUSB0 115200
 
 
 # Compile into binary file
