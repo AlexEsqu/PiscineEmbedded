@@ -133,7 +133,7 @@ void	makeBlink()
 {
 	OCR1A = F_CPU / (2 * 256 * 1) - 1;
 	
-	timer_init(TIMER_MODE_CTC, TOP_OCR1A, CMP_SET, CMP_DISCONNECT);
+	timer_init(TIMER_MODE_CTC, TOP_OCRA, CMP_SET, CMP_DISCONNECT);
 	SREG |= (1 << 7);
 	TIMSK1 |= (1 << OCIE1A);
 	TCCR1B |= 0b00000101;

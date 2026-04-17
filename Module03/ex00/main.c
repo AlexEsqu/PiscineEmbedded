@@ -23,9 +23,6 @@ typedef enum
 	LED_GREEN	= PD6
 } e_color_led;
 
-
-
-
 void colorOnly(e_color_led color)
 {
 	if (color == LED_BLUE)

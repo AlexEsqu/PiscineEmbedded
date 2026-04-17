@@ -8,27 +8,27 @@ static int timer1_get_wgm(e_timer_mode mode, e_timer_submode sub)
         case TIMER_MODE_NORMAL: 
             return 0x0;
         case TIMER_MODE_CTC:
-            if (sub == TOP_OCR1A) 
+            if (sub == TOP_OCRA) 
                 return 0x4;
-            if (sub == TOP_ICR1)  
+            if (sub == TOP_ICR)  
                 return 0xC;
             break;
         case TIMER_MODE_FAST_PWM:
-            if (sub == TOP_ICR1)  
+            if (sub == TOP_ICR)  
                 return 0xE;
-            if (sub == TOP_OCR1A) 
+            if (sub == TOP_OCRA) 
                 return 0xF;
             break;
         case TIMER_MODE_PWM_PC:
-            if (sub == TOP_ICR1)  
+            if (sub == TOP_ICR)  
                 return 0xA;
-            if (sub == TOP_OCR1A) 
+            if (sub == TOP_OCRA) 
                 return 0xB;
             break;
         case TIMER_MODE_PWM_PF:
-            if (sub == TOP_ICR1)  
+            if (sub == TOP_ICR)  
                 return 0x8;
-            if (sub == TOP_OCR1A) 
+            if (sub == TOP_OCRA) 
                 return 0x9;
             break;
     }

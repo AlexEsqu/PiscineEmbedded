@@ -23,7 +23,7 @@ int main()
 
 	OCR1A = topOfCounter;
 
-	timer_init(TIMER_MODE_CTC, TOP_OCR1A, CMP_SET, CMP_DISCONNECT);
+	timer_init(TIMER_MODE_CTC, TOP_OCRA, CMP_SET, CMP_DISCONNECT);
 
 	// Set up VR Status Register (SREG) to allow for interrupts
 	// See Global Interrupt Enable at datasheet p. 20

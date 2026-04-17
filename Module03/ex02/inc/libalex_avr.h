@@ -8,8 +8,26 @@
 
 // COLOR
 
+typedef enum
+{
+	LED_BLUE	= PD3,
+	LED_RED		= PD5,
+	LED_GREEN	= PD6
+} e_color_led;
 
+typedef enum
+{
+	RED			= 0b0010'0000,
+	GREEN		= 0b0100'0000,
+	BLUE		= 0b0000'1000,
+	YELLOW		= 0b0110'0000,
+	CYAN		= 0b0100'1000,
+	MAGENTA		= 0b0010'1000,
+	WHITE		= 0b0110'1000
+}	e_color;
 
+void    init_rgb();
+void    set_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 // TIMERS
 
@@ -51,7 +69,9 @@ typedef enum {
 } e_compare_mode;
 
 
-void    timer_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void    timer0_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void    timer1_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void    timer2_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
 void    delay_ms(int ms);
 
 // UART
@@ -64,9 +84,9 @@ void    uart_printstr(const char* str);
 
 // BITSHIFT
 
-void toggle(uint8_t targetBit, volatile uint8_t* reg);
-void set(uint8_t targetBit, volatile uint8_t* reg);
-void clear(uint8_t targetBit, volatile uint8_t* reg);
+void    toggle(uint8_t targetBit, volatile uint8_t* reg);
+void    set(uint8_t targetBit, volatile uint8_t* reg);
+void    clear(uint8_t targetBit, volatile uint8_t* reg);
 
 
 

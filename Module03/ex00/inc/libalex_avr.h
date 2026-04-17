@@ -21,8 +21,8 @@ typedef enum {
 // Table 16-4 Waveform Generation Mode p. 141 (cont)
 typedef enum {
     TOP_DEFAULT,
-    TOP_OCR1A,
-    TOP_ICR1
+    TOP_OCRA,
+    TOP_ICR
 } e_timer_submode;
 
 // Table 16-5 Clock Select p.143
