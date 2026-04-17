@@ -1,4 +1,4 @@
-NAME = Soup
+NAME = gaymer
 
 SRC = 	main.c \
 		uart.c \
