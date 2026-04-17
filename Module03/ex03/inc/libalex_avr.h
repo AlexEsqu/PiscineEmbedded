@@ -28,6 +28,9 @@ typedef enum
 
 void    init_rgb();
 void    set_rgb(uint8_t r, uint8_t g, uint8_t b);
+uint8_t get_red(uint32_t color);
+uint8_t get_green(uint32_t color);
+uint8_t get_blue(uint32_t color);
 
 // TIMERS
 
@@ -79,6 +82,7 @@ void    delay_ms(int ms);
 void    uart_init();
 void    uart_tx(char c);
 char    uart_rx();
+void    uart_printhex(uint32_t c);
 void    uart_printstr(const char* str);
 
 

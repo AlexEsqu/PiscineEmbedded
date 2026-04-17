@@ -24,3 +24,18 @@ void set_rgb(uint8_t r, uint8_t g, uint8_t b)
     OCR0B = 255 - r;
     OCR2B = 255 - b;
 }
+
+uint8_t get_red(uint32_t color)
+{
+    return (uint8_t)((color >> 16) & 0xFF);
+}
+
+uint8_t get_green(uint32_t color)
+{
+    return (uint8_t)((color >> 8) & 0xFF);
+}
+
+uint8_t get_blue(uint32_t color)
+{
+    return (uint8_t)(color & 0xFF);
+}

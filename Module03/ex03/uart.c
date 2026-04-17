@@ -79,3 +79,29 @@ void uart_printstr(const char* str)
         uart_tx(*str++);
     }
 }
+
+
+void uart_printhex(uint32_t num)
+{
+    const char hex[] = "0123456789ABCDEF";
+    char buf[8];
+    uint32_t i = 0;
+
+	uart_printstr("0x");
+    if (num == 0)
+    {
+        uart_tx('0');
+        return;
+    }
+
+    while (num > 0 && i < sizeof(buf))
+    {
+        buf[i++] = hex[num % 16];
+        num /= 16;
+    }
+
+    while (i > 0)
+    {
+        uart_tx(buf[--i]);
+    }
+}

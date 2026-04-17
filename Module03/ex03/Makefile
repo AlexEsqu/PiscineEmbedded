@@ -1,4 +1,4 @@
-NAME = Soup
+NAME = promptColor
 
 SRC = 	main.c \
 		uart.c \
@@ -35,6 +35,9 @@ flash:
 			$(FLASH)
 
 asm:		$(ASM)
+
+run:		all
+			screen /dev/ttyUSB0 115200
 
 clean:
 			rm -rf $(OBJ_DIR)
