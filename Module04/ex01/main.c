@@ -1,9 +1,11 @@
 #include "libalex_avr.h"
 
-// • You are required to write a program that changes the state of LED D1 when the
-// button SW1 is pressed.
-// • You must use interrupts to read the state of the button. Reading the PINx registers
-// is not allowed.
+// • You must configure Timer0 to trigger a periodic interrupt that varies the duty cycle
+// of the LED PB1 controlled by Timer1.
+// • The frequency of Timer1 must be high enough to no longer see the LED blinking.
+// • Do not hesitate to use multiple Timer registers to complete this exercise.
+// • The duty cycle should vary in a loop from 0% to 100% and then from 100% to 0%
+//   in 1 second.
 
 
 // Per schema:
@@ -24,43 +26,11 @@ typedef enum
 } e_sense_control;
 
 
-void	__attribute__((signal)) __vector_11 (void)
-{
-	// re-enable the interrupt
-	EIMSK |= (1 << INT0);
-
-	// stop the timer
-	timer0_launch(CLK_STOP);
-}
-
-void	setupDebounceTimer()
-{
-	// set debounce time at 1 second
-	OCR1A = ((F_CPU / 256UL) - 1);
-
-	// initilize timer1 at 0
-	TCNT1 = 0;
-
-	// intialize a timer1 to track debounce time
-	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_SET, CMP_DISCONNECT);
-
-	// launch timer1 by setting up redivider of 256
-	timer1_launch(CLK_DIV256);
-}
-
-
 // Setting the interrupt function of the External Interrupt Request 0 to light LED
 // Per datasheet Table 12-6 p. 77
 void __attribute__((signal)) __vector_1 (void)
 {
-	// toggle LED
 	PORTB ^= (1 << PD1);
-
-	// disable switch external interrupt
-	EIMSK &= ~(1 << INT0);
-
-	// launch timer which will interrupt later to reenable
-	setupDebounceTimer();
 }
 
 
@@ -82,7 +52,7 @@ int main()
 
 	// Set up External Interrupt Control Register A (EICRA)
 	// to specify the sense control of the interrupt
-	EICRA |= (1 << ISC01) | (0 << ISC00);
+	EICRA |= (0 << ISC01) | (1 << ISC00);
 
 	while (1)
 	{

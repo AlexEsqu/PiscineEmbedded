@@ -1,4 +1,4 @@
-NAME = switchLed
+NAME = wheelBlink
 
 SRC = 	main.c \
 		uart.c \
