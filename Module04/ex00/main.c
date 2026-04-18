@@ -36,7 +36,7 @@ void	__attribute__((signal)) __vector_11 (void)
 void	setupDebounceTimer()
 {
 	// set debounce time at 1 second
-	OCR1A = ((F_CPU / 256UL) - 1);
+	OCR1A = ((F_CPU / 256UL) - 1) /2;
 
 	// initilize timer1 at 0
 	TCNT1 = 0;

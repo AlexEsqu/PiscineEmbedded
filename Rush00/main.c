@@ -17,54 +17,60 @@ typedef enum
 
 
 
-int main(void)
+// int main(void)
+// {
+// 	e_state state = START;
+
+// 	switch state
+// 	{
+// 		case START:
+// 		{
+// 			// Open receive and transmit port
+// 			// Allow button to send message
+// 			// Await a message from other board
+
+// 			// if (receive message)
+// 			// case = LAST_READY
+// 			// if (message sent is acknowledged)
+// 			// case = FIRST_READY
+// 			break;
+// 		}
+// 		case FIRST_READY:
+// 		{
+// 			// set up as controller / master
+// 			break;
+// 		}
+// 		case LAST_READY:
+// 		{
+// 			// set up as target / slave
+// 			break;
+// 		}
+// 		case COUNTDOWN:
+// 		{
+// 			// timer for race start
+// 			// led display countdown
+// 			break;
+// 		}
+// 		case RACE:
+// 		{
+// 			// while (1)
+// 			// await first button push (acknowledgement ?)
+// 			[[fallthrough]]
+// 		}
+// 		case PODIUM:
+// 		{
+// 			// display led RED for loser, GREEN / GAYMER for winner
+// 			break;
+// 		}
+// 		default:
+// 		{
+// 			// display orange led
+// 		}
+// 	}
+// }
+
+
+int main()
 {
-	e_state state = START;
 
-	switch state
-	{
-		case START:
-		{
-			// Open receive and transmit port
-			// Allow button to send message
-			// Await a message from other board
-
-			// if (receive message)
-			// case = LAST_READY
-			// if (message sent is acknowledged)
-			// case = FIRST_READY
-			break;
-		}
-		case FIRST_READY:
-		{
-			// set up as controller / master
-			break;
-		}
-		case LAST_READY:
-		{
-			// set up as target / slave
-			break;
-		}
-		case COUNTDOWN:
-		{
-			// timer for race start
-			// led display countdown
-			break;
-		}
-		case RACE:
-		{
-			// while (1)
-			// await first button push (acknowledgement ?)
-			[[fallthrough]]
-		}
-		case PODIUM:
-		{
-			// display led RED for loser, GREEN / GAYMER for winner
-			break;
-		}
-		default:
-		{
-			// display orange led
-		}
-	}
 }
