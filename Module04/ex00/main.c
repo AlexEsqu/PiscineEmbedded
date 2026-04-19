@@ -26,26 +26,26 @@ typedef enum
 
 void	__attribute__((signal)) __vector_11 (void)
 {
-	// re-enable the interrupt
+	// re-enable the button interrupt
 	EIMSK |= (1 << INT0);
 
-	// stop the timer
-	timer0_launch(CLK_STOP);
+	// stop the timer and its interrupt
+	TIMSK1 &= ~(1 << OCIE1A);
+	timer1_launch(CLK_STOP);
 }
 
 void	setupDebounceTimer()
-{
-	// set debounce time at 1 second
-	OCR1A = ((F_CPU / 256UL) - 1) /2;
+{	
+	// set debounce time at 2 seconds
+	OCR1A = (((F_CPU / 1024UL) - 1) * 4UL);
 
 	// initilize timer1 at 0
 	TCNT1 = 0;
 
-	// intialize a timer1 to track debounce time
-	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_SET, CMP_DISCONNECT);
+	TIFR1 |= (1 << OCF1A);
+	TIMSK1 |= (1 << OCIE1A);
 
-	// launch timer1 by setting up redivider of 256
-	timer1_launch(CLK_DIV256);
+	timer1_launch(CLK_DIV1024);
 }
 
 
@@ -54,7 +54,7 @@ void	setupDebounceTimer()
 void __attribute__((signal)) __vector_1 (void)
 {
 	// toggle LED
-	PORTB ^= (1 << PD1);
+	PORTB ^= (1 << PB1);
 
 	// disable switch external interrupt
 	EIMSK &= ~(1 << INT0);
@@ -66,12 +66,15 @@ void __attribute__((signal)) __vector_1 (void)
 
 int main()
 {
-	// Set LED D1 as output
-	DDRB |= (1 << PD1);
-	// Set SWT 1 as input
-	DDRB &= ~(1 << PD2);
+	// Set LED B1 as output and turned off
+	DDRB |= (1 << PB1);
+	PORTB &= ~(1 << PB1);
 
-	// Set up Status Register (SREG) to allow for interrupts
+	// Set SWT 1 as input and initialize it (still not sure last part is needed)
+	DDRD &= ~(1 << PD2);
+	PORTD |= (1 << PD2);
+
+	// Set up Status Register (SREG) to allow for interrupts (equivalent to sei())
 	// See Global Interrupt Enable at datasheet p. 20
 	SREG |= (1 << 7);
 
@@ -82,7 +85,13 @@ int main()
 
 	// Set up External Interrupt Control Register A (EICRA)
 	// to specify the sense control of the interrupt
-	EICRA |= (1 << ISC01) | (0 << ISC00);
+	// here fall edge, so it activate as I press the button
+	EICRA = (EICRA | (1 << ISC01));
+
+	// intialize a timer1 to track debounce time
+	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_DISCONNECT, CMP_DISCONNECT);
+
+	timer1_launch(CLK_STOP);
 
 	while (1)
 	{

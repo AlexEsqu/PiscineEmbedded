@@ -72,5 +72,5 @@ typedef enum
 
 int main()
 {
-
+	
 }
