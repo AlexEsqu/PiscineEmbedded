@@ -8,34 +8,70 @@
 // So setting the TOP of the correct timers to the appropriate values
 // and initializing the correct timers
 
-void init_rgb()
+void setTimer0Timer2ForRGB()
 {
-    // setting portD LEDs as output
-    DDRD |= (1 << PD3) | (1 << PD5) | (1 << PD6);
+	// setting portD LEDs as output
+	DDRD |= (1 << PD3) | (1 << PD5) | (1 << PD6);
 
-    // initializing timer 0 and 2
-    timer0_init(TIMER_MODE_FAST_PWM, TOP_DEFAULT, CMP_SET, CMP_SET);
-    timer2_init(TIMER_MODE_FAST_PWM, TOP_DEFAULT, CMP_DISCONNECT, CMP_SET);
+	// initializing timer 0 and 2
+	timer0_init(TIMER_MODE_FAST_PWM, TOP_DEFAULT, CMP_SET, CMP_SET);
+	timer2_init(TIMER_MODE_FAST_PWM, TOP_DEFAULT, CMP_DISCONNECT, CMP_SET);
 }
 
 void set_rgb(uint8_t r, uint8_t g, uint8_t b)
 {
-    OCR0A = 255 - g;
-    OCR0B = 255 - r;
-    OCR2B = 255 - b;
+	OCR0A = 255 - g;
+	OCR0B = 255 - r;
+	OCR2B = 255 - b;
+}
+
+void setColorLedTo(e_color color)
+{
+	PORTD = (PORTD & 0b1001'0111) | color;
 }
 
 uint8_t get_red(uint32_t color)
 {
-    return (uint8_t)((color >> 16) & 0xFF);
+	return (uint8_t)((color >> 16) & 0xFF);
 }
 
 uint8_t get_green(uint32_t color)
 {
-    return (uint8_t)((color >> 8) & 0xFF);
+	return (uint8_t)((color >> 8) & 0xFF);
 }
 
 uint8_t get_blue(uint32_t color)
 {
-    return (uint8_t)(color & 0xFF);
+	return (uint8_t)(color & 0xFF);
+}
+
+void	wheel(uint8_t pos)
+{
+	pos = 255 - pos;
+	if (pos < 85)
+	{
+		set_rgb(255 - pos * 3, 0, pos * 3);
+	}
+	else if (pos < 170)
+	{
+		pos = pos - 85;
+		set_rgb(0, pos * 3, 255 - pos * 3);
+	}
+	else
+	{
+		pos = pos - 170;
+		set_rgb(pos * 3, 255 - pos * 3, 0);
+	}
+}
+
+void	setGamer()
+{
+	uint8_t pos = 0;
+	setTimer0Timer2ForRGB();
+
+	while (1)
+	{
+		wheel(pos++);
+		_delay_ms(10);
+	}
 }
