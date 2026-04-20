@@ -1,4 +1,4 @@
-NAME = wheelBlink
+NAME = IntNoBlink
 
 SRC = 	main.c \
 		uart.c \

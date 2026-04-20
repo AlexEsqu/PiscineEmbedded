@@ -7,52 +7,64 @@
 // • The duty cycle should vary in a loop from 0% to 100% and then from 100% to 0%
 //   in 1 second.
 
+volatile uint8_t duty = 0;
 
 // Per schema:
-// SW1 is on PD2 / INT0
 // LED D1
 
-// Per datasheet:
-// Pin Change Interrup Request 0 is vector 3 - Table 12-6 p.74
-// Interrupts on switch press (external interrupts) can be set up
-// Using SREG and External Interrupt Control Register A (EICRA)
 
-typedef enum
-{
-	LOW_LEVEL = 0b00,
-	ANY_LOGIC = 0b01,
-	FALL_EDGE = 0b10,
-	RISE_EDGE = 0b11
-} e_sense_control;
-
-
-// Setting the interrupt function of the External Interrupt Request 0 to light LED
+// Setting the interrupt function of the Timer0 COMA to increase duty
 // Per datasheet Table 12-6 p. 77
-void __attribute__((signal)) __vector_1 (void)
+void __attribute__((signal, used)) __vector_14 (void)
 {
-	PORTB ^= (1 << PD1);
+	static bool isRising = true;
+
+	if (isRising && duty < 100)
+		duty++;
+	else if (duty == 100)
+	{
+		isRising = false;
+		duty--;
+	}
+	else if (duty == 1)
+	{
+		isRising = true;
+		duty--;
+	}
+	else
+		duty--;
+
+	OCR1A = (ICR1 * duty) / 100;
 }
 
 
 int main()
 {
-	// Set LED D1 as output
-	DDRB |= (1 << PD1);
-	// Set SWT 1 as input
-	DDRB &= ~(1 << PD2);
+	// Set LED D2 as output
+	DDRB |= (1 << PB1);
 
-	// Set up Status Register (SREG) to allow for interrupts
+	// Set Status Register (SREG) to allow for interrupts
 	// See Global Interrupt Enable at datasheet p. 20
 	SREG |= (1 << 7);
 
-	// Set up External Interrupt Mask Register (EIMSK)
-	// to allow for interupts on SW1 press
-	// See register details on datasheet p.81
-	EIMSK |= (1 << INT0);
+	// Set timer0 Status Register to allow for interrupts on COMA
+	// See Timer/Counter Interrupt Mask Register p.118
+	TIMSK0 |= (1 << OCIE0A);
 
-	// Set up External Interrupt Control Register A (EICRA)
-	// to specify the sense control of the interrupt
-	EICRA |= (0 << ISC01) | (1 << ISC00);
+	// Set timer1 TOP to fit one second with a 8 predivided
+	ICR1 = 250;
+
+	// Set timer1 in fast PWD with a top set by ICR1 register to pop every second
+	timer1_init(TIMER_MODE_FAST_PWM, TOP_ICR, CMP_CLEAR, CMP_DISCONNECT);
+
+	OCR0A = 77;
+
+	// Set timer0 in CTC with a top set by OCR0A register to pop and vary the duty cycle
+	timer0_init(TIMER_MODE_CTC, TOP_OCRA, CMP_TOGGLE, CMP_DISCONNECT);
+
+	timer0_launch(CLK_DIV1024);
+
+	timer1_launch(CLK_DIV8);
 
 	while (1)
 	{
