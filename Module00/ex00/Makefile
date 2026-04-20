@@ -15,7 +15,7 @@ AVR_LIBC_DIR=/tmp/avr-libc
 COMPILE_FLAGS = -mmcu=$(CHIP) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU)
 
 COMPILER = avr-gcc
-CONVERT_TO_HEX = avr-objcopy -I binary -O ihex
+CONVERT_TO_HEX = avr-objcopy -O ihex
 FLASH = avrdude $(SET_PROGRAM) -p $(CHIP) $(OPEN_SERIAL) $(SET_BAUD) -U flash:w:$(HEX):i
 
 
