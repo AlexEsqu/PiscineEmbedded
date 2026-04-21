@@ -18,16 +18,37 @@ int main()
 	// set PC0 as input
 	DDRC &= ~(1 << PC0);
 
-	// initialize the ADC
-	ADMUX = 0;
+	// ADC INITIALIZATION
 
-	// set ADC0 as input
+	// Initialize ADC ports
+	ADMUX = 0;
+	// set ADC0 as input is not needed
 	// per datasheet Table 24-4 Input Channel Selection
-	// set MUX at 0 0 0 0 so nothing to do
+	// set MUX at 0 0 0 0 to target ADC so nothing to do
+	// set voltage reference to AVCC as subject requires
+	ADMUX |= (1 << REFS0);
+	// ADMUX = (1 << REFS0) | (1 << ADLAR);
+
+	// Initialize ADC Control
+	ADCSRA = 0;
+	// launch ADC with prescaler select of 128
+	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+
+	// launch ADC in Free Running mode
+	ADCSRB = 0;
 
 	while (1)
 	{
-		;
+		ADCSRA |= (1 << ADSC); // require conversion
+		while (ADCSRA & (1 << ADSC)) // wait for conversion to be over (p. 258)
+			;
+		uint8_t high = ADCH;
+		// uint8_t low = ADCL;
+		uart_printstr("Potentialometer is:");
+		uart_printhex(high);
+		// uart_printhex(low);
+		uart_printstr("\r\n");
+		_delay_ms(500);
 	}
 }
 
