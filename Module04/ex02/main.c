@@ -77,14 +77,12 @@ void	concludeDebounceOnSwt2()
 
 	if (PIND & (1 << PD4))	// if button is not still pressed, was probably faulty
 		return;
-	else
-	{
-		while (!(PIND & (1 << PD4)))
-			;
-	}
 
 	value--;
 	displayNumber(value);
+
+	while (!(PIND & (1 << PD4)))
+		;
 }
 
 void	concludeDebounceOnSwt1()
@@ -93,14 +91,13 @@ void	concludeDebounceOnSwt1()
 
 	if (PIND & (1 << PD2))	// if button is not still pressed, was probably faulty
 		return;
-	else
-	{
-		while (!(PIND & (1 << PD2)))
-			;
-	}
 
 	value++;
 	displayNumber(value);
+
+	while (!(PIND & (1 << PD2)))
+		;
+
 }
 
 // Set the interrupt function of the External Interrupt Request 0
