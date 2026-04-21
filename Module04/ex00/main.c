@@ -17,8 +17,6 @@
 
 #define DEBOUNCE_COUNT 20
 
-volatile uint8_t isDebouncingSw1 = false;
-
 // Set up External Interrupt Mask Register (EIMSK)
 // to allow for interupts on SW1 press
 // See register details on datasheet p.81
@@ -41,8 +39,6 @@ void	stopDebounceOnSwt1()
 
 	// remove COMA interrupt on timer
 	TIMSK1 &= ~(1 << OCIE1A);
-
-	isDebouncingSw1 = false;
 }
 
 void	concludeDebounceOnSwt1()
@@ -71,8 +67,6 @@ void	__attribute__((signal)) __vector_11 (void)
 // Launch fast timer to check the button press actually was a button press
 void	launchDebounceOnSwt1()
 {
-	isDebouncingSw1 = true;
-
 	// set COMA value to when debounce is over
 	OCR1A = TCNT1 + DEBOUNCE_COUNT;
 
@@ -81,7 +75,6 @@ void	launchDebounceOnSwt1()
 
 	removeInterruptOnSwt1();
 }
-
 
 
 // Setting the interrupt function of the External Interrupt Request 0
