@@ -1,7 +1,7 @@
 #include "libalex_avr.h"
 
 // • You must configure Timer0 to trigger a periodic interrupt that varies the duty cycle
-// of the LED PB1 controlled by Timer1.
+//   of the LED PB1 controlled by Timer1.
 // • The frequency of Timer1 must be high enough to no longer see the LED blinking.
 // • Do not hesitate to use multiple Timer registers to complete this exercise.
 // • The duty cycle should vary in a loop from 0% to 100% and then from 100% to 0%
@@ -51,13 +51,15 @@ int main()
 	// See Timer/Counter Interrupt Mask Register p.118
 	TIMSK0 |= (1 << OCIE0A);
 
-	// Set timer1 TOP to fit one second with a 8 predivided
-	ICR1 = 250;
+	// Set timer1 TOP to avoid blinking
+	ICR1 = 100;
 
 	// Set timer1 in fast PWD with a top set by ICR1 register to pop every second
 	timer1_init(TIMER_MODE_FAST_PWM, TOP_ICR, CMP_CLEAR, CMP_DISCONNECT);
 
-	OCR0A = 77;
+	// how many steps to go through duty cycle
+	// 200 steps in one seconds with 1024 predivider
+	OCR0A = ((F_CPU / (1024UL * 200UL)) - 1UL);
 
 	// Set timer0 in CTC with a top set by OCR0A register to pop and vary the duty cycle
 	timer0_init(TIMER_MODE_CTC, TOP_OCRA, CMP_TOGGLE, CMP_DISCONNECT);

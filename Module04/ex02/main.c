@@ -47,6 +47,20 @@ void	launchDebounceOnSwt1()
 	removeInterruptOnSwt1();
 }
 
+// Launch fast timer to check the button press actually was a button press
+void	launchDebounceOnSwt2()
+{
+	isDebouncingSw2 = true;
+
+	// set COMB value to when debounce is over
+	OCR1B = TCNT1 + DEBOUNCE_COUNT;
+
+	// enable COMA interrupt on timer
+	TIMSK1 |= (1 << OCIE1B);
+
+	removeInterruptOnSwt2();
+}
+
 void	stopDebounceOnSwt1()
 {
 	setInterruptOnSwt1(); // re-enable interrupt on button
@@ -55,6 +69,32 @@ void	stopDebounceOnSwt1()
 	TIMSK1 &= ~(1 << OCIE1A);
 
 	isDebouncingSw1 = false;
+}
+
+void	stopDebounceOnSwt2()
+{
+	setInterruptOnSwt2(); // re-enable interrupt on button
+
+	// remove COMB interrupt on timer
+	TIMSK1 &= ~(1 << OCIE1B);
+
+	isDebouncingSw2 = false;
+}
+
+void	concludeDebounceOnSwt2()
+{
+	stopDebounceOnSwt2();
+
+	if (PIND & (1 << PD4))	// if button is not still pressed, was probably faulty
+		return;
+	else
+	{
+		while (!(PIND & (1 << PD4)))
+			;
+	}
+
+	value--;
+	displayNumber(value);
 }
 
 void	concludeDebounceOnSwt1()
@@ -80,11 +120,26 @@ void __attribute__((signal)) __vector_1 (void)
 	launchDebounceOnSwt1();
 }
 
+// Set the interrupt function of the External Interrupt Request 0
+// Per datasheet Table 12-6 p. 77
+void __attribute__((signal)) __vector_5 (void)
+{
+	launchDebounceOnSwt2();
+}
+
 // Set the interrupt function of the Timer1 COMA
 // Per datasheet Table 12-6 p. 77
 void __attribute__((signal)) __vector_11 (void)
 {
 	concludeDebounceOnSwt1();
+}
+
+
+// Set the interrupt function of the Timer1 COMB
+// Per datasheet Table 12-6 p. 77
+void __attribute__((signal)) __vector_12 (void)
+{
+	concludeDebounceOnSwt2();
 }
 
 
