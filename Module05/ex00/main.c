@@ -26,8 +26,7 @@ int main()
 	// per datasheet Table 24-4 Input Channel Selection
 	// set MUX at 0 0 0 0 to target ADC so nothing to do
 	// set voltage reference to AVCC as subject requires
-	ADMUX |= (1 << REFS0);
-	// ADMUX = (1 << REFS0) | (1 << ADLAR);
+	ADMUX |= (1 << REFS0) | (1 << ADLAR);
 
 	// Initialize ADC Control
 	ADCSRA = 0;
@@ -39,14 +38,15 @@ int main()
 
 	while (1)
 	{
-		ADCSRA |= (1 << ADSC); // require conversion
-		while (ADCSRA & (1 << ADSC)) // wait for conversion to be over (p. 258)
+		// require conversion
+		ADCSRA |= (1 << ADSC);
+		// wait for conversion to be over (p. 258)
+		while (ADCSRA & (1 << ADSC))
 			;
+
 		uint8_t high = ADCH;
-		// uint8_t low = ADCL;
 		uart_printstr("Potentialometer is:");
 		uart_printhex(high);
-		// uart_printhex(low);
 		uart_printstr("\r\n");
 		_delay_ms(500);
 	}
