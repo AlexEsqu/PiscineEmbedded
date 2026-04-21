@@ -15,52 +15,80 @@
 // Interrupts on switch press (external interrupts) can be set up
 // Using SREG and External Interrupt Control Register A (EICRA)
 
-typedef enum
-{
-	LOW_LEVEL = 0b00,
-	ANY_LOGIC = 0b01,
-	FALL_EDGE = 0b10,
-	RISE_EDGE = 0b11
-} e_sense_control;
+#define DEBOUNCE_COUNT 20
 
+volatile uint8_t isDebouncingSw1 = false;
 
-void	__attribute__((signal)) __vector_11 (void)
+// Set up External Interrupt Mask Register (EIMSK)
+// to allow for interupts on SW1 press
+// See register details on datasheet p.81
+void	setInterruptOnSwt1()
 {
-	// re-enable the button interrupt
 	EIMSK |= (1 << INT0);
-
-	// stop the timer and its interrupt
-	TIMSK1 &= ~(1 << OCIE1A);
-	timer1_launch(CLK_STOP);
 }
 
-void	setupDebounceTimer()
-{	
-	// set debounce time at 2 seconds
-	OCR1A = (((F_CPU / 1024UL) - 1) * 4UL);
-
-	// initilize timer1 at 0
-	TCNT1 = 0;
-
-	TIFR1 |= (1 << OCF1A);
-	TIMSK1 |= (1 << OCIE1A);
-
-	timer1_launch(CLK_DIV1024);
-}
-
-
-// Setting the interrupt function of the External Interrupt Request 0 to light LED
-// Per datasheet Table 12-6 p. 77
-void __attribute__((signal)) __vector_1 (void)
+// Remove External Interrupt Mask Register (EIMSK)
+// against interupts on SW1 press
+void	removeInterruptOnSwt1()
 {
+	EIMSK &= ~(1 << INT0);
+}
+
+void	stopDebounceOnSwt1()
+{
+	// re-enable interrupt on button
+	setInterruptOnSwt1();
+
+	// remove COMA interrupt on timer
+	TIMSK1 &= ~(1 << OCIE1A);
+
+	isDebouncingSw1 = false;
+}
+
+void	concludeDebounceOnSwt1()
+{
+	stopDebounceOnSwt1();
+
+	// if button is not still pressed, was probably faulty
+	if (PIND & (1 << PD2))
+		return;
+
 	// toggle LED
 	PORTB ^= (1 << PB1);
 
-	// disable switch external interrupt
-	EIMSK &= ~(1 << INT0);
+	// skip while button pressed
+	while (!(PIND & (1 << PD2)))
+		;
+}
 
-	// launch timer which will interrupt later to reenable
-	setupDebounceTimer();
+
+// INTERRUPT for timer1 COMA
+void	__attribute__((signal)) __vector_11 (void)
+{
+	concludeDebounceOnSwt1();
+}
+
+// Launch fast timer to check the button press actually was a button press
+void	launchDebounceOnSwt1()
+{
+	isDebouncingSw1 = true;
+
+	// set COMA value to when debounce is over
+	OCR1A = TCNT1 + DEBOUNCE_COUNT;
+
+	// enable COMA interrupt on timer
+	TIMSK1 |= (1 << OCIE1A);
+
+	removeInterruptOnSwt1();
+}
+
+
+
+// Setting the interrupt function of the External Interrupt Request 0
+// Per datasheet Table 12-6 p. 77
+void __attribute__((signal)) __vector_1 (void)
+{
+	launchDebounceOnSwt1();
 }
 
 
@@ -78,20 +106,17 @@ int main()
 	// See Global Interrupt Enable at datasheet p. 20
 	SREG |= (1 << 7);
 
-	// Set up External Interrupt Mask Register (EIMSK)
-	// to allow for interupts on SW1 press
-	// See register details on datasheet p.81
-	EIMSK |= (1 << INT0);
+	setInterruptOnSwt1();
 
 	// Set up External Interrupt Control Register A (EICRA)
 	// to specify the sense control of the interrupt
 	// here fall edge, so it activate as I press the button
-	EICRA = (EICRA | (1 << ISC01));
+	EICRA |= (1 << ISC11);
 
-	// intialize a timer1 to track debounce time
-	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_DISCONNECT, CMP_DISCONNECT);
+	// Set timer1 to be used for debouncing the switches
+	timer1_init(TIMER_MODE_CTC,TOP_DEFAULT,CMP_DISCONNECT,CMP_DISCONNECT);
 
-	timer1_launch(CLK_STOP);
+	timer1_launch(CLK_DIV1024);
 
 	while (1)
 	{

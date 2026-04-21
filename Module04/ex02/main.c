@@ -143,22 +143,6 @@ void __attribute__((signal)) __vector_12 (void)
 }
 
 
-
-// // Set the interrupt function of the External Interrupt Request 1
-// // Per datasheet Table 12-6 p. 77
-// void __attribute__((signal)) __vector_2 (void)
-// {
-// 	if (PIND & (1 << PD4))
-// 		return;
-
-// 	value--;
-// 	isDebouncingSw2 = true;
-// 	removeInterruptOnSwt2();
-
-// 	displayNumber(value);
-// }
-
-
 int main()
 {
 	// GPIO INIT
@@ -191,11 +175,8 @@ int main()
 
 	// DEBOUNCE INIT
 
-	// Set timer1 to count 10ms, to be used for debouncing the switches
+	// Set timer1 to be used for debouncing the switches
 	timer1_init(TIMER_MODE_CTC,TOP_DEFAULT,CMP_DISCONNECT,CMP_DISCONNECT);
-
-	// // set timer1 TOP to 10 ms
-	// ICR1 = ((F_CPU * 0.01) / 1024UL) - 1;
 
 	timer1_launch(CLK_DIV1024);
 
