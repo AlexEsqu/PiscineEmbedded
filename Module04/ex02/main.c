@@ -20,12 +20,14 @@ void displayNumber(int num)
 
     // explicitly extracting all binary digit of the count
     // for those like me not really up to spec in binary
-    unsigned char binary1 =  (num & 0b00000001);
-    unsigned char binary2 =  (num & 0b00000010);
-    unsigned char binary4 =  (num & 0b00000100);
+	uint8_t numOnlyFourBit = (uint8_t)num & 0x0F;
+
+    unsigned char binary1 =  (numOnlyFourBit & 0b00000001);
+    unsigned char binary2 =  (numOnlyFourBit & 0b00000010);
+    unsigned char binary4 =  (numOnlyFourBit & 0b00000100);
     // binary8 is shifted because it'll be placed a lil awkwardly
     // at index 4 instead of 3
-    unsigned char binary8 = ((num & 0b00001000) << 1);
+    unsigned char binary8 = ((numOnlyFourBit & 0b00001000) << 1);
 
     // setting the LEDS to their respective values
     PORTB |= binary1 | binary2 | binary4 | binary8;
@@ -78,7 +80,11 @@ void	concludeDebounceOnSwt2()
 	if (PIND & (1 << PD4))	// if button is not still pressed, was probably faulty
 		return;
 
-	value--;
+	if (value <= 0)
+		value = 15;
+	else
+		value--;
+
 	displayNumber(value);
 
 	while (!(PIND & (1 << PD4)))
@@ -92,7 +98,11 @@ void	concludeDebounceOnSwt1()
 	if (PIND & (1 << PD2))	// if button is not still pressed, was probably faulty
 		return;
 
-	value++;
+	if (value >= 15)
+		value = 0;
+	else
+		value++;
+
 	displayNumber(value);
 
 	while (!(PIND & (1 << PD2)))
