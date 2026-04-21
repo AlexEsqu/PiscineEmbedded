@@ -8,17 +8,51 @@
 // SW1 is on PD2 / INT0
 // LED D1
 
-// Per datasheet:
-// Pin Change Interrup Request 0 is vector 3 - Table 12-6 p.74
-// Interrupts on switch press (external interrupts) can be set up
-// Using SREG and External Interrupt Control Register A (EICRA)
+// per schema:
+// RV1 / Potentiometer is on ADC_POT, which is on ADC_0 and PC0
 
 int main()
 {
 	uart_init();
+
+	// set PC0 as input
+	DDRC &= ~(1 << PC0);
+
+	// initialize the ADC
+	ADMUX = 0;
+
+	// set ADC0 as input
+	// per datasheet Table 24-4 Input Channel Selection
+	// set MUX at 0 0 0 0 so nothing to do
 
 	while (1)
 	{
 		;
 	}
 }
+
+
+// ADMUX – ADC Multiplexer Selection Register
+// REFS1		REFS0		ADLAR		–			MUX3		MUX2		MUX1		MUX0
+// [ Voltage reference	  ]	[Left Adju]	[		]	[ which analog inputs are connected		]
+
+// ADCSRA – ADC Control and Status Register A
+// ADEN			ADSC		ADATE		ADIF		ADIE		ADPS2		ADPS1		ADPS0
+// [enable ADC]	[StartConv]	[Auto Trig]	[Int Flag]	[Int Enabl]	[Prescaler select bits		]
+
+// ADCSRB – ADC Control and Status Register B
+// –			ACME		–			–			–			ADTS2		ADTS1		ADTS0
+// 				[multiplex]										[							]
+
+// ACSR - Analog Comparator and Status Register
+// ACD			ACBG		ACO			ACI			ACIE		ACIC		ACIS1		ACIS0
+// [comp off]	[bandgap]	[output]	[int flag]	[int enabl]	[input cap]	[interrupt mode	]
+
+
+// ADCL - ADC Data Register Low
+// ADCH - ADC Data Register High
+// Two Registers contain result of conversion
+
+// ADCSRB – ADC Control and Status Register B
+// –			ACME		–			–			–			ADTS2		ADTS1		ADTS0
+// [		  ]	[multiplex] [								  ]	[Auto Trigger Source		]
