@@ -7,8 +7,6 @@
 // • Vous devez utiliser les interrupts et ne rien avoir dans votre boucle de main.
 
 volatile uint8_t value = 0;
-volatile uint8_t isDebouncingSw1 = false;
-volatile uint8_t isDebouncingSw2 = false;
 
 #define DEBOUNCE_COUNT 200
 
@@ -36,8 +34,6 @@ void displayNumber(int num)
 // Launch fast timer to check the button press actually was a button press
 void	launchDebounceOnSwt1()
 {
-	isDebouncingSw1 = true;
-
 	// set COMA value to when debounce is over
 	OCR1A = TCNT1 + DEBOUNCE_COUNT;
 
@@ -50,8 +46,6 @@ void	launchDebounceOnSwt1()
 // Launch fast timer to check the button press actually was a button press
 void	launchDebounceOnSwt2()
 {
-	isDebouncingSw2 = true;
-
 	// set COMB value to when debounce is over
 	OCR1B = TCNT1 + DEBOUNCE_COUNT;
 
@@ -67,8 +61,6 @@ void	stopDebounceOnSwt1()
 
 	// remove COMA interrupt on timer
 	TIMSK1 &= ~(1 << OCIE1A);
-
-	isDebouncingSw1 = false;
 }
 
 void	stopDebounceOnSwt2()
@@ -77,8 +69,6 @@ void	stopDebounceOnSwt2()
 
 	// remove COMB interrupt on timer
 	TIMSK1 &= ~(1 << OCIE1B);
-
-	isDebouncingSw2 = false;
 }
 
 void	concludeDebounceOnSwt2()
