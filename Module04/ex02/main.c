@@ -10,6 +10,8 @@ volatile uint8_t value = 0;
 volatile uint8_t isDebouncingSw1 = false;
 volatile uint8_t isDebouncingSw2 = false;
 
+#define DEBOUNCE_COUNT 200
+
 // Per schema:
 // LED D1
 
@@ -31,45 +33,75 @@ void displayNumber(int num)
     PORTB |= binary1 | binary2 | binary4 | binary8;
 }
 
+// Launch fast timer to check the button press actually was a button press
+void	launchDebounceOnSwt1()
+{
+	isDebouncingSw1 = true;
+
+	// set COMA value to when debounce is over
+	OCR1A = TCNT1 + DEBOUNCE_COUNT;
+
+	// enable COMA interrupt on timer
+	TIMSK1 |= (1 << OCIE1A);
+
+	removeInterruptOnSwt1();
+}
+
+void	stopDebounceOnSwt1()
+{
+	setInterruptOnSwt1(); // re-enable interrupt on button
+
+	// remove COMA interrupt on timer
+	TIMSK1 &= ~(1 << OCIE1A);
+
+	isDebouncingSw1 = false;
+}
+
+void	concludeDebounceOnSwt1()
+{
+	stopDebounceOnSwt1();
+
+	if (PIND & (1 << PD2))	// if button is not still pressed, was probably faulty
+		return;
+	else
+	{
+		while (!(PIND & (1 << PD2)))
+			;
+	}
+
+	value++;
+	displayNumber(value);
+}
+
 // Set the interrupt function of the External Interrupt Request 0
 // Per datasheet Table 12-6 p. 77
 void __attribute__((signal)) __vector_1 (void)
 {
-	value++;
-	displayNumber(value);
-	isDebouncingSw1 = true;
-	EIMSK &= ~(1 << INT0);
-	TIFR0 |= (1 << OCF0A);
-	TCNT0 = 0;
-	timer0_launch(CLK_DIV1024);
+	launchDebounceOnSwt1();
 }
 
-// Set the interrupt function of the External Interrupt Request 1
+// Set the interrupt function of the Timer1 COMA
 // Per datasheet Table 12-6 p. 77
-void __attribute__((signal)) __vector_2 (void)
+void __attribute__((signal)) __vector_11 (void)
 {
-	value--;
-	displayNumber(value);
-	isDebouncingSw2 = true;
-	EIMSK &= ~(1 << INT1);
-	TIFR0 |= (1 << OCF0A);
-	TCNT0 = 0;
-	timer0_launch(CLK_DIV1024);
+	concludeDebounceOnSwt1();
 }
 
-void __attribute__((signal)) __vector_14 (void)
-{
-	if (isDebouncingSw1)
-	{
-		isDebouncingSw1 = false;
-		EIMSK |= (1 << INT0);
-	}
-	if (isDebouncingSw2)
-	{
-		isDebouncingSw2 = false;
-		EIMSK |= (1 << INT1);
-	}
-}
+
+
+// // Set the interrupt function of the External Interrupt Request 1
+// // Per datasheet Table 12-6 p. 77
+// void __attribute__((signal)) __vector_2 (void)
+// {
+// 	if (PIND & (1 << PD4))
+// 		return;
+
+// 	value--;
+// 	isDebouncingSw2 = true;
+// 	removeInterruptOnSwt2();
+
+// 	displayNumber(value);
+// }
 
 
 int main()
@@ -91,27 +123,26 @@ int main()
 	// See Global Interrupt Enable at datasheet p. 20
 	SREG |= (1 << 7);
 
-	// Fine tune interrupt of switch 1 and 2 on fall edge (button press)
-	EICRA = (EICRA & 0b1111'1100) | FALL_EDGE;
-	EICRA = (EICRA & 0b1111'0011) | FALL_EDGE << 2;
+	// Set swt1 Interrupt to falling edge
+	EICRA |= (1 << ISC11);
 
 	// Set External Interrupt Mask Register to allow for interrupts on SW1 and SW2
 	// See datasheet p. 81
-	EIMSK |= (1 << INT0);
-	// FIND WHERE SW2 HAS ITS PIN
+	setInterruptOnSwt1();
+
+	// Set Pin Change Interrupt Control Register + Pin Change Mask Register 2
+	// See datasheet p.82
+	setInterruptOnSwt2();
 
 	// DEBOUNCE INIT
 
-	// Set timer0 to count 10ms, to be used for debouncing the switches
-	timer0_init(TIMER_MODE_CTC,TOP_OCRA,CMP_DISCONNECT,CMP_DISCONNECT);
+	// Set timer1 to count 10ms, to be used for debouncing the switches
+	timer1_init(TIMER_MODE_CTC,TOP_DEFAULT,CMP_DISCONNECT,CMP_DISCONNECT);
 
-	// set timer0 TOP to 10 ms
-	OCR0A = ((F_CPU * 0.01) / 1024UL) - 1;
+	// // set timer1 TOP to 10 ms
+	// ICR1 = ((F_CPU * 0.01) / 1024UL) - 1;
 
-	// set timer0 to compare to the TOP value in OCR1A
-	TIMSK0 |= (1 << OCIE0A);
-
-	// timer0_launch(CLK_DIV1024);
+	timer1_launch(CLK_DIV1024);
 
 	while (1)
 	{

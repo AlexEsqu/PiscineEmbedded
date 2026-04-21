@@ -4,6 +4,7 @@ SRC = 	main.c \
 		uart.c \
 		bitshift.c \
 		timer.c \
+		button.c \
 		rgb.c
 
 INC_DIR = inc

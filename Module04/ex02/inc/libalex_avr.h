@@ -117,7 +117,8 @@ typedef enum
 
 void	setInterruptOnSwt1();
 void	removeInterruptOnSwt1();
-void	setDebounceTimer();
+void	setInterruptOnSwt2();
+void	removeInterruptOnSwt2();
 
 
 #endif
