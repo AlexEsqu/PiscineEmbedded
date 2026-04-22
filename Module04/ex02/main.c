@@ -43,6 +43,7 @@ void	launchDebounceOnSwt1()
 	TIMSK1 |= (1 << OCIE1A);
 
 	removeInterruptOnSwt1();
+	EICRA ^= (1 << ISC00);
 }
 
 // Launch fast timer to check the button press actually was a button press
@@ -55,7 +56,7 @@ void	launchDebounceOnSwt2()
 	TIMSK1 |= (1 << OCIE1B);
 
 	removeInterruptOnSwt2();
-	EICRA ^= (1 << ISC00);:
+
 }
 
 void	stopDebounceOnSwt1()
@@ -161,7 +162,7 @@ int main()
 	SREG |= (1 << 7);
 
 	// Set swt1 Interrupt to falling edge
-	EICRA |= (1 << ISC11);
+	EICRA ^= (1 << ISC00);
 
 	// Set External Interrupt Mask Register to allow for interrupts on SW1 and SW2
 	// See datasheet p. 81
