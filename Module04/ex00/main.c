@@ -38,7 +38,7 @@ void	__attribute__((signal)) __vector_11 (void)
 void	setupDebounceTimer()
 {
 	// set debounce time at 20 mili seconds
-	OCR1A = ((F_CPU / (1024UL * 4UL)) - 1UL);
+	OCR1A = ((F_CPU / (1024UL * 40UL)) - 1UL);
 
 	// initilize timer1 at 0
 	TCNT1 = 0;
@@ -57,10 +57,19 @@ void	setupDebounceTimer()
 // Per datasheet Table 12-6 p. 77
 void __attribute__((signal)) __vector_1 (void)
 {
-	// toggle LED
-	PORTB ^= (1 << PB1);
+	// remove interrupt
+	EIMSK &= ~(1 << INT0);
 
-	// launch timer which will interrupt later to reenable
+	// toggle LED if we were in falling edge (button press)
+	if (!(EICRA & (1 << ISC00)))
+	{
+		PORTB ^= (1 << PB1);
+	}
+
+	// toggle rising / falling edge to opposite
+	EICRA ^= (1 << ISC00);
+
+	// launch timer which will interrupt later to reenable switch interrupt
 	setupDebounceTimer();
 }
 

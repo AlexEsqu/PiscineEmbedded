@@ -18,7 +18,8 @@ void adc_init()
 	DDRC &= ~(1 << PC0);
 
 	// set voltage reference to AVCC as subject requires
-	ADMUX |= (1 << REFS0) | (1 << ADLAR);
+	// remove ADLR since no need for 8bits only anymore
+	ADMUX |= (1 << REFS0);
 
 	// Initialize ADC Control
 
@@ -30,7 +31,7 @@ void adc_init()
 }
 
 
-uint8_t get_adc0_conv()
+uint16_t get_adc0_conv()
 {
 	// set ADC to check input ADC0 / Potentiometer
 	// see Table 24-4 Input Channel Selection
@@ -42,12 +43,12 @@ uint8_t get_adc0_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	// reading only the first 8bit per subject requirements
-	uint8_t high = ADCH;
+	uint16_t tenBitsOfData = ADC;
+
 	return high;
 }
 
-uint8_t get_adc1_conv()
+uint16_t get_adc1_conv()
 {
 	// set ADC to check input ADC0 / Potentiometer
 	// see Table 24-4 Input Channel Selection
@@ -60,8 +61,9 @@ uint8_t get_adc1_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	// reading only the first 8bit per subject requirements
 	uint8_t high = ADCH;
+	uint8_t low = ADCL;
+
 	return high;
 }
 

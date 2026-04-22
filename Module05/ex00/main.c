@@ -1,67 +1,36 @@
 #include "libalex_avr.h"
 
-// • Lisez le potentiomètre RV1 + la LDR (R14) + la NTC (R20).
-// • Affichez ensuite les valeurs au format hexadécimal toutes les 20 ms sur la console.
+// Lisez la valeur du potentiomètre linéaire RV1 en utilisant le peripherique ADC.
+// • ADC doit être configuré avec une résolution de 8 bits et AVCC comme référence.
+// • Affichez ensuite sa valeur au format hexadécimal toutes les 20 ms sur la console.
 
 // per schema:
 // RV1 / Potentiometer is on ADC_POT, which is on ADC_0 and PC0
-
-adc_init()
-{
-	// Initialize ADC ports
-
-	ADMUX = 0;
-	ADCSRA = 0;
-	ADCSRB = 0;
-	ADCSRC = 0;
-
-	// set PC0 as input
-	DDRC &= ~(1 << PC0);
-
-	// set voltage reference to AVCC as subject requires
-	ADMUX |= (1 << REFS0) | (1 << ADLAR);
-
-	// Initialize ADC Control
-
-	// launch ADC with prescaler select of 128
-	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-
-	// launch ADC in Free Running mode
-	// no set up needed
-}
-
-ntc_init()
-{
-	// Initialize NTC ports
-
-	// set PC1 as input
-	DDRC &= ~(1 << PC1);
-
-	// set ADC1 as input
-
-
-	// set voltage reference to AVCC as subject requires
-	ADMUX |= (1 << REFS0) | (1 << ADLAR);
-
-	// Initialize ADC Control
-
-	// launch ADC with prescaler select of 128
-	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-
-	// launch ADC in Free Running mode
-	// no set up needed
-}
-
 
 int main()
 {
 	uart_init();
 
-
+	// set PC0 as input
+	DDRC &= ~(1 << PC0);
 
 	// ADC INITIALIZATION
-	adc_init();
 
+	// Initialize ADC ports
+	ADMUX = 0;
+	// set ADC0 as input is not needed
+	// per datasheet Table 24-4 Input Channel Selection
+	// set MUX at 0 0 0 0 to target ADC0 so nothing to do
+	// set voltage reference to AVCC as subject requires
+	ADMUX |= (1 << REFS0) | (1 << ADLAR);
+
+	// Initialize ADC Control
+	ADCSRA = 0;
+	// launch ADC with prescaler select of 128
+	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+
+	// launch ADC in Free Running mode
+	ADCSRB = 0;
 
 	while (1)
 	{
@@ -74,10 +43,6 @@ int main()
 		// reading only the first 8bit per subject requirements
 		uint8_t high = ADCH;
 		uart_printhex(high);
-		uart_printstr(", ");
-
-		uart_printstr(", ");
-
 		uart_printstr("\r\n");
 		_delay_ms(20);
 	}

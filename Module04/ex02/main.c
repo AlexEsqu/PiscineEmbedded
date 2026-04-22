@@ -55,6 +55,7 @@ void	launchDebounceOnSwt2()
 	TIMSK1 |= (1 << OCIE1B);
 
 	removeInterruptOnSwt2();
+	EICRA ^= (1 << ISC00);:
 }
 
 void	stopDebounceOnSwt1()
