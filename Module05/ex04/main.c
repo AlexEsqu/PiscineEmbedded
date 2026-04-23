@@ -36,22 +36,22 @@ int main()
 	while (1)
 	{
 		uint16_t rv1 = get_adc0_conv();
-		uint32_t percentage = ((float)rv1 / (float)TOP_OF_TEN_BITS) * 100;
+		uint32_t percentage = ((float)rv1 / (float)TOP_OF_TEN_BITS) * 255;
 		wheel(percentage);
 		PORTB &= ~((1 << LED_D1) | (1 << LED_D2) | (1 << LED_D3) | (1 << LED_D4));
-		if (percentage >= 25)
+		if (percentage >= 64)
 		{
 			PORTB |= (1 << LED_D1);
 		}
-		if (percentage >= 50)
+		if (percentage >= 128)
 		{
 			PORTB |= (1 << LED_D2);
 		}
-		if (percentage >= 75)
+		if (percentage >= 192)
 		{
 			PORTB |= (1 << LED_D3);
 		}
-		if (percentage >= 100)
+		if (percentage >= 255)
 		{
 			PORTB |= (1 << LED_D4);
 		}
