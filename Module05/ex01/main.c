@@ -99,11 +99,11 @@ int main()
 		uart_printhex(get_adc0_conv());
 		uart_printstr(", ");
 
-		// print NTC
+		// print NTC (Negative Temperature Coefficient Thermistor)
 		uart_printhex(get_adc2_conv());
 		uart_printstr(", ");
 
-		// print LDR
+		// print LDR (Light Dependant Resistor)
 		uart_printhex(get_adc1_conv());
 		uart_printstr("\r\n");
 		_delay_ms(20);

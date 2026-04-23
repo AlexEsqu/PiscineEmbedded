@@ -90,6 +90,8 @@ void    uart_tx(char c);
 char    uart_rx();
 void    uart_printhex(uint32_t c);
 void    uart_printstr(const char* str);
+void    uart_itoa(uint32_t num);
+
 
 
 // BITSHIFT

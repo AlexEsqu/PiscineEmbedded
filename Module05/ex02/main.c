@@ -43,9 +43,10 @@ uint16_t get_adc0_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	uint16_t tenBitsOfData = ADC;
+	// extracting ten first bits of data
+	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
 
-	return high;
+	return tenBitsOfData;
 }
 
 uint16_t get_adc1_conv()
@@ -61,19 +62,17 @@ uint16_t get_adc1_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	uint8_t high = ADCH;
-	uint8_t low = ADCL;
+	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
 
-	return high;
+	return tenBitsOfData;
 }
 
-
-uint8_t get_adc2_conv()
+uint16_t get_adc2_conv()
 {
 	// set ADC to check input ADC0 / Potentiometer
 	// see Table 24-4 Input Channel Selection
-	ADMUX &= ~((1 << MUX3) | (1 << MUX2));
-	ADMUX |= (1 << MUX0) | (1 << MUX1);
+	ADMUX &= ~((1 << MUX3) | (1 << MUX2) | (1 << MUX0));
+	ADMUX |= (1 << MUX1);
 
 	// require conversion
 	ADCSRA |= (1 << ADSC);
@@ -81,11 +80,10 @@ uint8_t get_adc2_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	// reading only the first 8bit per subject requirements
-	uint8_t high = ADCH;
-	return high;
-}
+	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
 
+	return tenBitsOfData;
+}
 
 
 int main()
@@ -98,15 +96,15 @@ int main()
 	while (1)
 	{
 		// print potentiometer
-		uart_printhex(get_adc0_conv());
-		uart_printstr(", ");
-
-		// print NTC
-		uart_printhex(get_adc2_conv());
+		uart_itoa(get_adc0_conv());
 		uart_printstr(", ");
 
 		// print LDR
-		uart_printhex(get_adc1_conv());
+		uart_itoa(get_adc1_conv());
+		uart_printstr(", ");
+
+		// print NTC
+		uart_itoa(get_adc2_conv());
 		uart_printstr("\r\n");
 		_delay_ms(20);
 	}
