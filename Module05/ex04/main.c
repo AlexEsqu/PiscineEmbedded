@@ -36,7 +36,7 @@ int main()
 	while (1)
 	{
 		uint16_t rv1 = get_adc0_conv();
-		uint32_t percentage = ((float)rv1 / (float)TOP_OF_TEN_BITS) * 255;
+		uint8_t percentage = ((float)rv1 / (float)TOP_OF_TEN_BITS) * 255;
 		wheel(percentage);
 		PORTB &= ~((1 << LED_D1) | (1 << LED_D2) | (1 << LED_D3) | (1 << LED_D4));
 		if (percentage >= 64)
