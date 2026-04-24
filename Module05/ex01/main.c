@@ -49,7 +49,7 @@ uint8_t get_adc0_conv()
 
 uint8_t get_adc1_conv()
 {
-	// set ADC to check input ADC0 / Potentiometer
+	// set ADC to check input ADC1 / Light resistor
 	// see Table 24-4 Input Channel Selection
 	ADMUX &= ~((1 << MUX3) | (1 << MUX2) | (1 << MUX1));
 	ADMUX |= (1 << MUX0);
@@ -68,10 +68,10 @@ uint8_t get_adc1_conv()
 
 uint8_t get_adc2_conv()
 {
-	// set ADC to check input ADC0 / Potentiometer
+	// set ADC to check input ADC2 / Thermometer
 	// see Table 24-4 Input Channel Selection
-	ADMUX &= ~((1 << MUX3) | (1 << MUX2));
-	ADMUX |= (1 << MUX0) | (1 << MUX1);
+	ADMUX &= ~((1 << MUX3) | (1 << MUX2) | (1 << MUX0));
+	ADMUX |= (1 << MUX1);
 
 	// require conversion
 	ADCSRA |= (1 << ADSC);
@@ -99,12 +99,12 @@ int main()
 		uart_printhex(get_adc0_conv());
 		uart_printstr(", ");
 
-		// print NTC (Negative Temperature Coefficient Thermistor)
-		uart_printhex(get_adc2_conv());
-		uart_printstr(", ");
-
 		// print LDR (Light Dependant Resistor)
 		uart_printhex(get_adc1_conv());
+		uart_printstr(", ");
+
+		// print NTC (Negative Temperature Coefficient Thermistor)
+		uart_printhex(get_adc2_conv());
 		uart_printstr("\r\n");
 		_delay_ms(20);
 	}

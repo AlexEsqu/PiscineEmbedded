@@ -113,6 +113,16 @@ uint16_t get_adc2_conv()
 }
 
 
+// Per Kevin Wang: Coef K is a fixed constant
+// the datasheet sets that 1100mV / 1024(adc) ≃ 1.07mV/adc (p.256)
+// 1.07mV = 1adc
+// 1mV ≃ 0.93adc
+// 0.93 adc ≃ 1 degree Celsius
+// 1 adc ≃ 1.07 degree Celcius
+// coefficient k ≃ 1.07 == (107 / 100)
+
+#define COEF_K (107 / 100)
+
 // additional source: https://developerhelp.microchip.com/xwiki/bin/view/products/mcu-mpu/8-bit-avr/peripherals/internal-temp-sensor/adc/
 uint16_t get_adc8_conv()
 {
@@ -132,14 +142,10 @@ uint16_t get_adc8_conv()
 
 	/* wait for conversion to complete */
 	while ((ADCSRA & (1<<ADSC)) != 0)
-	;
+		;
 
 	/* Calculate the temperature in C */
-	uint32_t Ctemp = (ADC - 30);
-
-
-	// Restore base ADC setup
-	ADMUX = (1 << REFS0);
+	uint32_t Ctemp = (ADC - (float)222) / ((float)107 / (float)100);
 
 	return (Ctemp);
 }
