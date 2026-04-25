@@ -25,35 +25,37 @@ void	print_hex_value(char c)
 	uart_printhex(c);
 }
 
-void	printHumidity(unsigned char humidity1, unsigned char humidity2, unsigned char humidity3Temp1)
+void	printHumidity(uint8_t humidity1, uint8_t humidity2, uint8_t humidity3Temp1)
 {
-	uint32_t raw = ((humidity1 << 12) | (humidity2 << 4) | (humidity3Temp1 >> 4));
-	uint32_t integerHumidity = (raw * 10000UL) / (float)1048576;
+	uint32_t raw = (((uint32_t)humidity1 << 12) | (uint32_t)(humidity2 << 4) | (humidity3Temp1 >> 4));
+	uint32_t HumidityTimesHundred = (uint32_t)(((uint64_t)raw * 10000ULL) / 1048576ULL);
 
 	uart_printstr("Humidity: ");
-	uart_itoa(integerHumidity / 100);
+	uart_itoa(HumidityTimesHundred / 100);
 	uart_printstr(",");
-	uart_itoa(integerHumidity);
-	uart_printstr("%RH from ");
-	uart_itoa(raw);
+	if ((HumidityTimesHundred % 100) < 10)
+		uart_printstr("0");
+	uart_utoa(HumidityTimesHundred % 100);
+	uart_printstr("%RH");
+	// uart_printstr(" from ");
+	// uart_itoa(raw);
 }
 
 void	printTemp( unsigned char humidity3Temp1,  unsigned char temp2,  unsigned char  temp3)
 {
-	(void) humidity3Temp1;
-	(void) temp2;
-	(void) temp3;
-	uint32_t raw =  ((uint32_t)(humidity3Temp1 & 0x0F) << 16) | ((uint32_t) temp2 << 8) | (temp3);
-	float celcius = ((raw * 200 / (float)1048576) - 50);
+	uint32_t raw =  (((uint32_t)humidity3Temp1 & 0x0F) << 16)
+		| ((uint32_t) temp2 << 8) | (temp3);
+	int32_t celciusTimesHundred = (int32_t)((((uint64_t)raw * 20000ULL) / 1048576ULL)) - 5000;
 
 	uart_printstr(" Temperature: ");
-	uart_itoa(celcius);
-	uart_printstr("C from ");
-	uart_utoa(raw);
-
-	// 4294960781
-	// 1048576
-
+	uart_itoa((uint32_t)celciusTimesHundred / 100);
+	uart_printstr(",");
+	if ((celciusTimesHundred % 100) < 10)
+		uart_printstr("0");
+	uart_utoa((uint32_t)celciusTimesHundred % 100);
+	uart_printstr("°C");
+	// uart_printstr(" from ");
+	// uart_utoa(raw);
 }
 
 // per ATH0 datasheet, p.11 7.4 Sensor Reading Process
@@ -73,22 +75,19 @@ void	getATH20SensorData()
 	// 3. Wait 80ms
 	_delay_ms(80);
 
-	//		AND for read status word bit[7] to be 0
-	i2c_renew_start();
+	// 4. receive 7 bytes
+	i2c_start();
 	i2c_enter_master_receiver();
-	// char status = i2c_read();
-	// while (status & 0x80)
-	// 	status = i2c_read();
-
-	// 4. receive 6 bytes
-	char	humidity1 = i2c_read();
-	char	humidity2 = i2c_read();
-	char	humidity3Temp1 = i2c_read();
-	char	temp2 = i2c_read();
+	uint8_t status   = i2c_read();
+	uint8_t	humidity1 = i2c_read();
+	uint8_t	humidity2 = i2c_read();
+	uint8_t	humidity3Temp1 = i2c_read();
+	uint8_t	temp2 = i2c_read();
+	uint8_t	temp3 = i2c_read();
+	(void)status;
 
 	// 5. send NACK if no need for CRC check
-	char	temp3 = i2c_read();
-	i2c_read_and_stop();
+	i2c_read_and_stop();	// CTC is read but discarded
 
 	printHumidity(humidity1, humidity2, humidity3Temp1);
 	printTemp(humidity3Temp1, temp2, temp3);

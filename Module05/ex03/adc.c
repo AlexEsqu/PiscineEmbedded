@@ -71,7 +71,7 @@ uint16_t get_adc0_conv()
 		;
 
 	// extracting ten first bits of data
-	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
+	uint16_t tenBitsOfData = (ADC & 0b0000001111111111);
 
 	return tenBitsOfData;
 }
@@ -89,7 +89,7 @@ uint16_t get_adc1_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
+	uint16_t tenBitsOfData = (ADC & 0b0000001111111111);
 
 	return tenBitsOfData;
 }
@@ -107,7 +107,7 @@ uint16_t get_adc2_conv()
 	while (ADCSRA & (1 << ADSC))
 		;
 
-	uint16_t tenBitsOfData = (ADC & 0b0000'0011'1111'1111);
+	uint16_t tenBitsOfData = (ADC & 0b0000001111111111);
 
 	return tenBitsOfData;
 }

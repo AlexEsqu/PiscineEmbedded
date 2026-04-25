@@ -21,8 +21,8 @@ ASM = $(OBJ_DIR)/$(NAME).asm
 
 CHIP = atmega328p
 F_CPU = 16000000UL
-OPEN_SERIAL = -P /dev/ttyUSB0
-OPEN_SECOND_SERIAL = -P /dev/ttyUSB1
+OPEN_SERIAL = -P /dev/ttyS1
+OPEN_SECOND_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
 

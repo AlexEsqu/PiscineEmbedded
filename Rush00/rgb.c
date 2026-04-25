@@ -27,7 +27,7 @@ void set_rgb(uint8_t r, uint8_t g, uint8_t b)
 
 void setColorLedTo(e_color color)
 {
-	PORTD = (PORTD & 0b1001'0111) | color;
+	PORTD = (PORTD & 0b10010111) | color;
 }
 
 uint8_t get_red(uint32_t color)

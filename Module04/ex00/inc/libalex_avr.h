@@ -17,13 +17,13 @@ typedef enum
 
 typedef enum
 {
-	RED			= 0b0010'0000,
-	GREEN		= 0b0100'0000,
-	BLUE		= 0b0000'1000,
-	YELLOW		= 0b0110'0000,
-	CYAN		= 0b0100'1000,
-	MAGENTA		= 0b0010'1000,
-	WHITE		= 0b0110'1000
+	RED			= 0b00100000,
+	GREEN		= 0b01000000,
+	BLUE		= 0b00001000,
+	YELLOW		= 0b01100000,
+	CYAN		= 0b01001000,
+	MAGENTA		= 0b00101000,
+	WHITE		= 0b01101000
 }	e_color;
 
 void    init_rgb();

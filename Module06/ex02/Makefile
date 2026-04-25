@@ -1,4 +1,4 @@
-~NAME = switchLed
+NAME = switchLed
 
 SRC = 	main.c \
 		uart.c \

@@ -43,14 +43,14 @@ void	getATH20SensorData()
 	_delay_ms(80);
 
 	//		AND for read status word bit[7] to be 0
-	i2c_renew_start();
-	i2c_enter_master_receiver();
 	uint8_t status = i2c_read();
 	while (status & 0x80)
 		status = i2c_read();
 
 	// 4. receive 6 bytes
-
+	i2c_start();
+	_delay_ms(10);
+	i2c_enter_master_receiver();
 	uint8_t	humidity1 = i2c_read();
 	uint8_t	humidity2 = i2c_read();
 	uint8_t	humidity3Temp1 = i2c_read();

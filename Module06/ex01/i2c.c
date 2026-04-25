@@ -38,13 +38,15 @@ void	waitForI2cTransmission()
 void i2c_init(void)
 {
 	// per datasheet p.222 : SCL Frequency F_SCL = (F_CPU) / (16 + 2(TWBR) * Prescaler)
-	// which reduces to TWBR = ((CPU Clock frequency / SCL frequency) – 16) / 2
+	// which reduces to TWBR = TWBR = (F_CPU / (2*F_SCL) - 8) / Prescaler
 	// source: https://www.arxterra.com/lecture-9-serial-communications-and-i2c/
 	// not my own math that would be madness
-	TWBR = (((float)F_CPU / (float)100000) - 16) / 2;
+	TWBR = (((float)F_CPU / (float)200000) - 8);
 
 	TWSR = 0;
 	// leaving prescaler at 1 so not changing TWPS1 and TWPS0
+
+	TWCR = (1 << TWEN);
 }
 
 // per datasheet p.225
@@ -124,22 +126,20 @@ void	i2c_write(unsigned char data)
 
 char	i2c_read(void)
 {
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1 << TWEA);
 	waitForI2cTransmission();
-
 	char data = TWDR;
-	TWCR = (1<<TWINT) | (1<<TWEN);
 
 	// uart_printstr("\r\nStatus after transmission of DATA:");
 	// uart_printhex(getI2cStatusCode());
-
 	return (data);
 }
 
 
 char	i2c_read_and_stop(void)
 {
+	TWCR = (1<<TWINT) | (1<<TWEN);
 	waitForI2cTransmission();
-
 	char data = TWDR;
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 
