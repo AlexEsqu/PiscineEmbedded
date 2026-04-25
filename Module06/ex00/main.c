@@ -53,15 +53,11 @@ void i2c_init(void)
 	// which reduces to TWBR = ((CPU Clock frequency / SCL frequency) – 16) / 2
 	// source: https://www.arxterra.com/lecture-9-serial-communications-and-i2c/
 	// not my own math that would be madness
-	TWBR = (F_CPU / 100000 - 16) / 2;
-
-	TWSR |= (1 << TWPS0); // prescaler = 4
-	TWBR = 18;
-	TWCR |= (1 << TWEN);
+	TWBR = (((float)F_CPU / (float)100000) - 16) / 2;
 
 	// per datasheet, inputting address of the slave, here the temperature and humidity module
 	// per datasheet of the module p.12, that address is 0x38
-	TWAR = (SENSOR_ADDRESS << 1);
+
 	TWSR = 0;
 	// leaving prescaler at 1 so not changing TWPS1 and TWPS0
 }
@@ -77,59 +73,49 @@ void i2c_start(void)
 	// see datasheet p.226
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 
-	// wait for the START to be transmitted
 	waitForTransmission();
 
 	uart_printstr("\r\nStatus after transmission of START:");
 	uart_printhex(getI2cStatusCode());
-	// check the start has been accepted
-	if (getI2cStatusCode() != I2C_START_TRANSMITTED)
-	{
-		uart_printstr("Start has been denied.\r\n");
-	}
 
 	// load SLA+W into the register to enter Master mode
-	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
-	TWCR &= ~(1<<TWSTO);
+	// see datasheet p.227
+	TWDR = ((SENSOR_ADDRESS << 1) | 0);
+
+	// Sending transfer
+	TWCR = (1<<TWINT) | (1<<TWEN);
+	TWCR &= ~((1<<TWSTO) | (1<<TWSTA));
 
 	waitForTransmission();
 
-	// check Master mode is launched
 	uart_printstr("\r\nStatus after transmission of SLA+W:");
 	uart_printhex(getI2cStatusCode());
 
-	if (getI2cStatusCode() != I2C_MT_SLA_W_ACK)
-	{
-		uart_printstr("Slave Write has been denied.\r\n");
-	}
 }
 
-// void	i2c_send(void)
-// {
-// 	TWDR = 0x00;
-// 	TWCR = (1<<TWINT) | (1<<TWEN);
-
-// 	waitForTransmission();
-
-// 	uart_printstr("Status after transmission of STOP:");
-// 	uart_printhex(getI2cStatusCode());
-// 	if ((TWSR & 0xF8) != I2C_MT_DATA_ACK)
-// 	{
-// 		uart_printstr("Data not acknowledged.\r\n");
-// 	}
-// }
-
-void i2c_stop(void)
+void	i2c_send(void)
 {
-	// transmit STOP, end transmission
-	TWCR = (1<<TWINT)|(1<<TWEN) | (1<<TWSTO);
+	TWDR = 0x00;
+	TWCR = (1<<TWINT) | (1<<TWEN);
 
-	uart_printstr("Status after transmission of STOP:");
+	waitForTransmission();
+
+	uart_printstr("\r\nStatus after transmission of DATA:");
 	uart_printhex(getI2cStatusCode());
 	if ((TWSR & 0xF8) != I2C_MT_DATA_ACK)
 	{
 		uart_printstr("Data not acknowledged.\r\n");
 	}
+}
+
+void i2c_stop(void)
+{
+	// transmit STOP, end transmission
+	TWCR &= ~(1<<TWEA);
+	TWCR |= (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
+
+	uart_printstr("\r\nStatus after transmission of STOP:");
+	uart_printhex(getI2cStatusCode());
 }
 
 int main()
