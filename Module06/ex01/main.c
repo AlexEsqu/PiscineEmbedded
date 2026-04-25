@@ -39,18 +39,18 @@ void	getATH20SensorData()
 	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM1);
 	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM2);
 
+	i2c_stop();
+
 	// 3. Wait 80ms
 	_delay_ms(80);
 
-	//		AND for read status word bit[7] to be 0
-	uint8_t status = i2c_read();
-	while (status & 0x80)
-		status = i2c_read();
+
 
 	// 4. receive 6 bytes
 	i2c_start();
 	_delay_ms(10);
 	i2c_enter_master_receiver();
+	uint8_t status   = i2c_read();
 	uint8_t	humidity1 = i2c_read();
 	uint8_t	humidity2 = i2c_read();
 	uint8_t	humidity3Temp1 = i2c_read();
@@ -59,6 +59,8 @@ void	getATH20SensorData()
 	// 5. send NACK if no need for CRC check
 	uint8_t	Temp3 = i2c_read();
 	uint8_t CRC = i2c_read_and_stop();
+
+	i2c_stop();
 
 	uart_printhex(status);
 	uart_printstr(" ");

@@ -61,6 +61,9 @@ void	printTemp( unsigned char humidity3Temp1,  unsigned char temp2,  unsigned ch
 // per ATH0 datasheet, p.11 7.4 Sensor Reading Process
 void	getATH20SensorData()
 {
+	
+	// SENDING COMMAND
+
 	i2c_start();
 
 	// 2.	Wait 10ms
@@ -72,8 +75,13 @@ void	getATH20SensorData()
 	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM1);
 	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM2);
 
+	i2c_stop();
+
 	// 3. Wait 80ms
 	_delay_ms(80);
+
+
+	// GETTING  DATA
 
 	// 4. receive 7 bytes
 	i2c_start();

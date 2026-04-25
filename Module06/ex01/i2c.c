@@ -152,6 +152,5 @@ char	i2c_read_and_stop(void)
 void i2c_stop(void)
 {
 	// transmit STOP, end transmission
-	TWCR &= ~(1<<TWEA);
 	TWCR |= (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 }
