@@ -25,6 +25,37 @@ void	print_hex_value(char c)
 	uart_printhex(c);
 }
 
+void	printHumidity(unsigned char humidity1, unsigned char humidity2, unsigned char humidity3Temp1)
+{
+	uint32_t raw = ((humidity1 << 12) | (humidity2 << 4) | (humidity3Temp1 >> 4));
+	uint32_t integerHumidity = (raw * 10000UL) / (float)1048576;
+
+	uart_printstr("Humidity: ");
+	uart_itoa(integerHumidity / 100);
+	uart_printstr(",");
+	uart_itoa(integerHumidity);
+	uart_printstr("%RH from ");
+	uart_itoa(raw);
+}
+
+void	printTemp( unsigned char humidity3Temp1,  unsigned char temp2,  unsigned char  temp3)
+{
+	(void) humidity3Temp1;
+	(void) temp2;
+	(void) temp3;
+	uint32_t raw =  ((uint32_t)(humidity3Temp1 & 0x0F) << 16) | ((uint32_t) temp2 << 8) | (temp3);
+	float celcius = ((raw * 200 / (float)1048576) - 50);
+
+	uart_printstr(" Temperature: ");
+	uart_itoa(celcius);
+	uart_printstr("C from ");
+	uart_utoa(raw);
+
+	// 4294960781
+	// 1048576
+
+}
+
 // per ATH0 datasheet, p.11 7.4 Sensor Reading Process
 void	getATH20SensorData()
 {
@@ -45,34 +76,22 @@ void	getATH20SensorData()
 	//		AND for read status word bit[7] to be 0
 	i2c_renew_start();
 	i2c_enter_master_receiver();
-	uint8_t status = i2c_read();
-	while (status & 0x80)
-		status = i2c_read();
+	// char status = i2c_read();
+	// while (status & 0x80)
+	// 	status = i2c_read();
 
 	// 4. receive 6 bytes
-
-	uint8_t	humidity1 = i2c_read();
-	uint8_t	humidity2 = i2c_read();
-	uint8_t	humidity3Temp1 = i2c_read();
-	uint8_t	Temp2 = i2c_read();
+	char	humidity1 = i2c_read();
+	char	humidity2 = i2c_read();
+	char	humidity3Temp1 = i2c_read();
+	char	temp2 = i2c_read();
 
 	// 5. send NACK if no need for CRC check
-	uint8_t	Temp3 = i2c_read();
-	uint8_t CRC = i2c_read_and_stop();
+	char	temp3 = i2c_read();
+	i2c_read_and_stop();
 
-	uart_printhex(status);
-	uart_printstr(" ");
-	uart_printhex(humidity1);
-	uart_printstr(" ");
-	uart_printhex(humidity2);
-	uart_printstr(" ");
-	uart_printhex(humidity3Temp1);
-	uart_printstr(" ");
-	uart_printhex(Temp2);
-	uart_printstr(" ");
-	uart_printhex(Temp3);
-	uart_printstr(" ");
-	uart_printhex(CRC);
+	printHumidity(humidity1, humidity2, humidity3Temp1);
+	printTemp(humidity3Temp1, temp2, temp3);
 	uart_printstr("\r\n");
 
 	_delay_ms(500);

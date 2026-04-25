@@ -81,11 +81,11 @@ void uart_printstr(const char* str)
 }
 
 
-void uart_printhex(uint32_t num)
+void uart_printhex(long num)
 {
     const char hex[] = "0123456789ABCDEF";
     char buf[8];
-    uint32_t i = 0;
+    long i = 0;
 
 	uart_printstr("0x");
     if (num == 0)
@@ -94,10 +94,21 @@ void uart_printhex(uint32_t num)
         return;
     }
 
-    while (num > 0 && i < sizeof(buf))
+    if (num < 0)
     {
-        buf[i++] = hex[num % 16];
-        num /= 16;
+        while (num < 0 && i < sizeof(buf))
+        {
+            buf[i++] = hex[num % 16];
+            num /= 16;
+        }
+    }
+    else
+    {
+        while (num > 0 && i < sizeof(buf))
+        {
+            buf[i++] = hex[num % 16];
+            num /= 16;
+        }
     }
 
     while (i > 0)
@@ -106,7 +117,44 @@ void uart_printhex(uint32_t num)
     }
 }
 
-void uart_itoa(uint32_t num)
+void uart_itoa(long num)
+{
+    const char dec[] = "0123456789";
+    char buf[12];
+    uint32_t i = 0;
+
+    if (num == 0)
+    {
+        uart_tx('0');
+        return;
+    }
+    if (num < 0)
+    {
+        uart_tx('-');
+
+        while (num < 0 && i < sizeof(buf))
+        {
+            buf[i++] = dec[num % 10];
+            num /= 10;
+        }
+    }
+    else
+    {
+        while (num > 0 && i < sizeof(buf))
+        {
+            buf[i++] = dec[num % 10];
+            num /= 10;
+        }
+    }
+
+    while (i > 0)
+    {
+        uart_tx(buf[--i]);
+    }
+}
+
+
+void uart_utoa(uint32_t num)
 {
     const char dec[] = "0123456789";
     char buf[10];
