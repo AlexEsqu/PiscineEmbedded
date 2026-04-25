@@ -123,6 +123,7 @@ void		i2c_init(void);
 void		i2c_start(void);
 void		i2c_write(unsigned char data);
 char		i2c_read(void);
+char	i2c_read_and_stop(void);
 void		i2c_stop(void);
 void		i2c_renew_start(void);
 void		i2c_enter_master_receiver();

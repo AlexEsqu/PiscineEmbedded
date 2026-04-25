@@ -50,8 +50,8 @@ void i2c_init(void)
 // per datasheet p.225
 void i2c_start(void)
 {
-	uart_printstr("Status before transmission of START:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("Status before transmission of START:");
+	// uart_printhex(getI2cStatusCode());
 
 	// send START condition to take control of the TWI bus
 	// see datasheet p.226
@@ -59,15 +59,15 @@ void i2c_start(void)
 
 	waitForI2cTransmission();
 
-	uart_printstr("\r\nStatus after transmission of START:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("\r\nStatus after transmission of START:");
+	// uart_printhex(getI2cStatusCode());
 }
 
 // per datasheet p.225
 void i2c_renew_start(void)
 {
-	uart_printstr("Status before transmission of RENEW START:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("Status before transmission of RENEW START:");
+	// uart_printhex(getI2cStatusCode());
 
 	// send START condition to take control of the TWI bus
 	// see datasheet p.226
@@ -75,31 +75,15 @@ void i2c_renew_start(void)
 
 	waitForI2cTransmission();
 
-	uart_printstr("\r\nStatus after transmission of RENEW START:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("\r\nStatus after transmission of RENEW START:");
+	// uart_printhex(getI2cStatusCode());
 }
 
 void	i2c_enter_master_receiver()
 {
-	// load SLA+W into the register to enter Master Receiver mode
+	// load SLA+R into the register to enter Master Receiver mode
 	// see datasheet p.227
 	TWDR = ((SENSOR_ADDRESS << 1) | 1);
-
-	// Send SLA+W mode
-	TWCR = (1<<TWINT) | (1<<TWEN);
-	TWCR &= ~((1<<TWSTO) | (1<<TWSTA));
-
-	waitForI2cTransmission();
-
-	uart_printstr("\r\nStatus after transmission of SLA+W:");
-	uart_printhex(getI2cStatusCode());
-}
-
-void	i2c_enter_master_transmitter()
-{
-	// load SLA+R into the register to enter Master Transmitter mode
-	// see datasheet p.229
-	TWDR = ((SENSOR_ADDRESS << 1) | 0);
 
 	// Send SLA+R mode
 	TWCR = (1<<TWINT) | (1<<TWEN);
@@ -107,8 +91,24 @@ void	i2c_enter_master_transmitter()
 
 	waitForI2cTransmission();
 
-	uart_printstr("\r\nStatus after transmission of SLA+R:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("\r\nStatus after transmission of SLA+W:");
+	// uart_printhex(getI2cStatusCode());
+}
+
+void	i2c_enter_master_transmitter()
+{
+	// load SLA+W into the register to enter Master Transmitter mode
+	// see datasheet p.229
+	TWDR = ((SENSOR_ADDRESS << 1) | 0);
+
+	// Send SLA+W mode
+	TWCR = (1<<TWINT) | (1<<TWEN);
+	TWCR &= ~((1<<TWSTO) | (1<<TWSTA));
+
+	waitForI2cTransmission();
+
+	// uart_printstr("\r\nStatus after transmission of SLA+R:");
+	// uart_printhex(getI2cStatusCode());
 }
 
 void	i2c_write(unsigned char data)
@@ -118,8 +118,8 @@ void	i2c_write(unsigned char data)
 
 	waitForI2cTransmission();
 
-	uart_printstr("\r\nStatus after transmission of DATA:");
-	uart_printhex(getI2cStatusCode());
+	// uart_printstr("\r\nStatus after transmission of DATA:");
+	// uart_printhex(getI2cStatusCode());
 }
 
 char	i2c_read(void)
@@ -128,6 +128,20 @@ char	i2c_read(void)
 
 	char data = TWDR;
 	TWCR = (1<<TWINT) | (1<<TWEN);
+
+	// uart_printstr("\r\nStatus after transmission of DATA:");
+	// uart_printhex(getI2cStatusCode());
+
+	return (data);
+}
+
+
+char	i2c_read_and_stop(void)
+{
+	waitForI2cTransmission();
+
+	char data = TWDR;
+	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 
 	// uart_printstr("\r\nStatus after transmission of DATA:");
 	// uart_printhex(getI2cStatusCode());

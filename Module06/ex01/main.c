@@ -14,6 +14,8 @@
 // Per datasheet of the AHT20 module (https://datasheet4u.com/pdf/1551700/AHT20.pdf)
 // Mesurment command of the captor is:
 #define ATH20_SENSOR_MEASUREMENT_COMMAND 0xAC
+#define ATH20_SENSOR_MEASUREMENT_PARAM1 0x33
+#define ATH20_SENSOR_MEASUREMENT_PARAM2 0x00
 
 #define ATH20_GET_STATUS_COMMAND 0x71
 
@@ -23,42 +25,57 @@ void	print_hex_value(char c)
 	uart_printhex(c);
 }
 
-// per ATH20 datasheet p.11 7.1
-void	prepSensor()
+// per ATH0 datasheet, p.11 7.4 Sensor Reading Process
+void	getATH20SensorData()
 {
-	// 7.1 Start Sensor
-	// after power-on, wait for >= 100 ms for sensor to reach idle state
-	_delay_ms(100);
-
-	// 7.2 Start Sequence
 	i2c_start();
 
-	// 7.3 Send Command
+	// 2.	Wait 10ms
+	_delay_ms(10);
+
+	//		Send command with parameters
 	i2c_enter_master_transmitter();
 	i2c_write(ATH20_SENSOR_MEASUREMENT_COMMAND);
+	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM1);
+	i2c_write(ATH20_SENSOR_MEASUREMENT_PARAM2);
 
-	// 7.4 Sensor Reading Process
-	// 1.	after power-on, wait for >= 100 ms
-	_delay_ms(100);
-
-	// 		get status word by sending 0x71
-	i2c_write(ATH20_GET_STATUS_COMMAND);
-	uart_printstr("\r\nSensor status is :");
-	uart_printhex(getI2cStatusCode());
-
-	//		if status word is not 0x18, calibrate
-	// if (status != I2C_MT_SLA_W_ACK)
-	// 	ath20_calibrate();
-
-	// 2. wait 10ms to send command
-	_delay_ms(10);
-	i2c_write(ATH20_SENSOR_MEASUREMENT_COMMAND);
-
-	// 3. wait 80ms AND for read status word bit[7] to be 0
-	// for measurement to be completed
+	// 3. Wait 80ms
 	_delay_ms(80);
-	while (TWDR & 0x1)
-		;
+
+	//		AND for read status word bit[7] to be 0
+	i2c_renew_start();
+	i2c_enter_master_receiver();
+	uint8_t status = i2c_read();
+	while (status & 0x80)
+		status = i2c_read();
+
+	// 4. receive 6 bytes
+
+	uint8_t	humidity1 = i2c_read();
+	uint8_t	humidity2 = i2c_read();
+	uint8_t	humidity3Temp1 = i2c_read();
+	uint8_t	Temp2 = i2c_read();
+
+	// 5. send NACK if no need for CRC check
+	uint8_t	Temp3 = i2c_read();
+	uint8_t CRC = i2c_read_and_stop();
+
+	uart_printhex(status);
+	uart_printstr(" ");
+	uart_printhex(humidity1);
+	uart_printstr(" ");
+	uart_printhex(humidity2);
+	uart_printstr(" ");
+	uart_printhex(humidity3Temp1);
+	uart_printstr(" ");
+	uart_printhex(Temp2);
+	uart_printstr(" ");
+	uart_printhex(Temp3);
+	uart_printstr(" ");
+	uart_printhex(CRC);
+	uart_printstr("\r\n");
+
+	_delay_ms(500);
 }
 
 int main()
@@ -66,17 +83,12 @@ int main()
 	uart_init();
 	i2c_init();
 
-
-
-
-
+	// Wait for Sensor to be idle
+	_delay_ms(100);
 
 	while (1)
 	{
-		_delay_ms(20);
-		char c = i2c_read();
-		print_hex_value(c);
-		_delay_ms(80);
+		getATH20SensorData();
 	}
 }
 
