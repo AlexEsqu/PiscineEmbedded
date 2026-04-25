@@ -1,17 +1,15 @@
 #include "libalex_avr.h"
 
-// • Le microcontrôleur AVR ATmega328P possède 1 interface I2C que vous devez uti-
-// liser dans cet exercice pour communiquer avec un capteur de température AHT20
-// (U3).
-// • Vous devez écrire une fonction i2c_init qui initialise l’I2C sur le microcontrôleur.
-// • L’I2C du MCU doit être configuré afin que la fréquence de communication soit de
-// 100 kHz.
-// • Vous devez écrire une fonction i2c_start qui démarre une transmission I2C entre
-// le microcontrôleur et le capteur.
-// • Le programme devra retourner sur votre ordinateur les valeurs de statut après
-// chaque envoi de donnée.
-// • Vous devez écrire une fonction i2c_stop qui interrompt la communication entre
-// le microcontrôleur et le capteur.
+// • The AVR ATmega328P microcontroller has 1 I2C peripheral that you must use in
+// this exercise to communicate with an AHT20 temperature sensor (U3).
+// • You must write a function i2c_init that initializes the I2C on the microcontroller.
+// • The MCU’s I2C must be configured so that the communication frequency is 100kHz.
+// • You must write a function i2c_start that starts an I2C transmission between the
+// microcontroller and the sensor.
+// • The program must return status values to your computer after each data transmis-
+// sion.
+// • You must write a function i2c_stop that interrupts communication between the
+// microcontroller and the sensor.
 
 // Per datasheet of the AHT20 module (https://datasheet4u.com/pdf/1551700/AHT20.pdf)
 // Address of the temperature captor is:
@@ -102,10 +100,6 @@ void	i2c_send(void)
 
 	uart_printstr("\r\nStatus after transmission of DATA:");
 	uart_printhex(getI2cStatusCode());
-	if ((TWSR & 0xF8) != I2C_MT_DATA_ACK)
-	{
-		uart_printstr("Data not acknowledged.\r\n");
-	}
 }
 
 void i2c_stop(void)
