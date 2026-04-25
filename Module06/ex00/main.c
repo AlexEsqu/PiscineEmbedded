@@ -17,36 +17,35 @@
 // Address of the temperature captor is:
 #define SENSOR_ADDRESS 0x38
 
-// Per datasheet p.227-228, i2C status codes are:
+// Per datasheet p.227-230, i2C status codes are:
 typedef enum
 {
-	I2C_MT_START_TRANSMITTED		= 0x08,
-	I2C_MT_START_REPEATED			= 0x10,
-	I2C_MT_SLA_W_ACKNOWLEDGED		= 0x18,
-	I2C_MT_SLA_W_NOT_ACKNOWLEDGED	= 0x20,
-	I2C_MT_DATA_ACKNOWLEDGED		= 0x28,
-	I2C_MT_DATA_NOT_ACKNOWLEDGED	= 0x30,
-	I2C_MT_ARBITRATION_LOST		= 0x38
+	I2C_START_TRANSMITTED	= 0x08,
+	I2C_START_REPEATED		= 0x10,
+	I2C_MT_SLA_W_ACK		= 0x18,
+	I2C_MT_SLA_W_NOT_ACK	= 0x20,
+	I2C_MT_DATA_ACK			= 0x28,
+	I2C_MT_DATA_NOT_ACK		= 0x30,
+	I2C_ARBITRATION_LOST	= 0x38,
+	I2C_MR_SLA_R_ACK		= 0x40,
+	I2C_MR_SLA_R_NOT_ACK	= 0x48,
+	I2C_MR_DATA_ACK			= 0x50,
+	I2C_MR_DATA_NOT_ACK		= 0x58
 } e_i2c_mt_status_code;
 
-typedef enum
-{
-	I2C_MR_START_TRANSMITTED		= 0x08,
-	I2C_MR_START_REPEATED			= 0x10,
-	I2C_MR_SLA_W_ACKNOWLEDGED		= 0x18,
-	I2C_MR_SLA_W_NOT_ACKNOWLEDGED	= 0x20,
-	I2C_MR_DATA_ACKNOWLEDGED		= 0x28,
-	I2C_MR_DATA_NOT_ACKNOWLEDGED	= 0x30,
-	I2C_MR_ARBITRATION_LOST		= 0x38
-} e_i2c_mt_status_code;
 
-uint8_t getI2cStatusCode()
+uint8_t	getI2cStatusCode()
 {
 	// shift 2 prescaler bits and 1 reserved bits
 	// leave only the status code
-	return (TWSR << 3);
+	return (TWSR & 0xF8);
 }
 
+void	waitForTransmission()
+{
+	while (!(TWCR & (1<<TWINT)))
+		;
+}
 
 void i2c_init(void)
 {
@@ -56,10 +55,13 @@ void i2c_init(void)
 	// not my own math that would be madness
 	TWBR = (F_CPU / 100000 - 16) / 2;
 
+	TWSR |= (1 << TWPS0); // prescaler = 4
+	TWBR = 18;
+	TWCR |= (1 << TWEN);
+
 	// per datasheet, inputting address of the slave, here the temperature and humidity module
 	// per datasheet of the module p.12, that address is 0x38
 	TWAR = (SENSOR_ADDRESS << 1);
-
 	TWSR = 0;
 	// leaving prescaler at 1 so not changing TWPS1 and TWPS0
 }
@@ -68,14 +70,18 @@ void i2c_init(void)
 // per datasheet p.225
 void i2c_start(void)
 {
+	uart_printstr("Status before transmission of START:");
+	uart_printhex(getI2cStatusCode());
+
 	// send START condition to take control of the TWI bus
 	// see datasheet p.226
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 
 	// wait for the START to be transmitted
-	while (!(TWCR & (1<<TWINT)))
-		;
+	waitForTransmission();
 
+	uart_printstr("\r\nStatus after transmission of START:");
+	uart_printhex(getI2cStatusCode());
 	// check the start has been accepted
 	if (getI2cStatusCode() != I2C_START_TRANSMITTED)
 	{
@@ -86,40 +92,54 @@ void i2c_start(void)
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
 	TWCR &= ~(1<<TWSTO);
 
-	while (!(TWCR & (1<<TWINT)))
-		;
+	waitForTransmission();
 
 	// check Master mode is launched
-	if (getI2cStatusCode() != I2C_SLA_W_ACKNOWLEDGED)
+	uart_printstr("\r\nStatus after transmission of SLA+W:");
+	uart_printhex(getI2cStatusCode());
+
+	if (getI2cStatusCode() != I2C_MT_SLA_W_ACK)
 	{
 		uart_printstr("Slave Write has been denied.\r\n");
 	}
 }
 
-void	i2c_send(void)
-{
-	TWDR = DATA;
-	TWCR = (1<<TWINT) | (1<<TWEN);
+// void	i2c_send(void)
+// {
+// 	TWDR = 0x00;
+// 	TWCR = (1<<TWINT) | (1<<TWEN);
 
-	while (!(TWCR & (1<<TWINT)))
-		;
+// 	waitForTransmission();
 
-	if ((TWSR & 0xF8) != I2C_DATA_ACKNOWLEDGED)
-	{
-		uart_printstr("Data not acknowledged.\r\n");
-	}
-}
+// 	uart_printstr("Status after transmission of STOP:");
+// 	uart_printhex(getI2cStatusCode());
+// 	if ((TWSR & 0xF8) != I2C_MT_DATA_ACK)
+// 	{
+// 		uart_printstr("Data not acknowledged.\r\n");
+// 	}
+// }
 
 void i2c_stop(void)
 {
 	// transmit STOP, end transmission
 	TWCR = (1<<TWINT)|(1<<TWEN) | (1<<TWSTO);
+
+	uart_printstr("Status after transmission of STOP:");
+	uart_printhex(getI2cStatusCode());
+	if ((TWSR & 0xF8) != I2C_MT_DATA_ACK)
+	{
+		uart_printstr("Data not acknowledged.\r\n");
+	}
 }
 
 int main()
 {
 	uart_init();
 	i2c_init();
+
+	i2c_start();
+	// i2c_send();
+	i2c_stop();
 }
 
 
