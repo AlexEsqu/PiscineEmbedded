@@ -84,10 +84,12 @@ void	getATH20SensorData()
 	uint8_t	humidity3Temp1 = i2c_read();
 	uint8_t	temp2 = i2c_read();
 	uint8_t	temp3 = i2c_read();
+	uint8_t	CTC = i2c_read();
 	(void)status;
+	(void)CTC;
 
 	// 5. send NACK if no need for CRC check
-	i2c_read_and_stop();	// CTC is read but discarded
+	i2c_stop();
 
 	printHumidity(humidity1, humidity2, humidity3Temp1);
 	printTemp(humidity3Temp1, temp2, temp3);

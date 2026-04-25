@@ -135,24 +135,8 @@ char	i2c_read(void)
 	return (data);
 }
 
-
-char	i2c_read_and_stop(void)
-{
-	TWCR = (1<<TWINT) | (1<<TWEN);
-	waitForI2cTransmission();
-
-	char data = TWDR;
-	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
-
-	// uart_printstr("\r\nStatus after transmission of DATA:");
-	// uart_printhex(getI2cStatusCode());
-
-	return (data);
-}
-
 void i2c_stop(void)
 {
 	// transmit STOP, end transmission
-	TWCR &= ~(1<<TWEA);
 	TWCR |= (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 }
