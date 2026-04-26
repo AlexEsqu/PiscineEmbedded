@@ -105,7 +105,6 @@ void	i2c_send(void)
 void i2c_stop(void)
 {
 	// transmit STOP, end transmission
-	TWCR &= ~(1<<TWEA);
 	TWCR |= (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 
 	uart_printstr("\r\nStatus after transmission of STOP:");
@@ -121,11 +120,6 @@ int main()
 	// i2c_send();
 	i2c_stop();
 }
-
-
-
-
-
 
 //
 // TWCR - TWI Control Register

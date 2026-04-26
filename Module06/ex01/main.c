@@ -58,7 +58,7 @@ void	getATH20SensorData()
 
 	// 5. send NACK if no need for CRC check
 	uint8_t	Temp3 = i2c_read();
-	uint8_t CRC = i2c_read_and_stop();
+	uint8_t CRC = i2c_read();
 
 	i2c_stop();
 
