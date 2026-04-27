@@ -108,3 +108,13 @@ OCR1A = \frac{F\_CPU}{2 \times prescaler \times blink\_frequency} - 1
 
 
 WARNING assigning the prescaler launches the timer
+
+
+
+# EEPROM
+
+## EEPROM Data Memory in Datasheet (p.29 - )
+
+### Preventing EEPROM Corruption
+EEPROM data corruption during low Vcc because both write sequence and CPU execution require high enough voltage
+=> Keep AVR RESET active (low) during insufficiant power supply voltage, by enabeing interna Brown out Detector (BOD)
