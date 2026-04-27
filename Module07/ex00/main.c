@@ -4,33 +4,54 @@
 // hexdump format.
 // 00000000 57 68 61 74 20
 
+#define EEPROM_SIZE 1023
+
+
+unsigned char EEPROM_read(unsigned int uiAddress)
+{
+	/* Wait for completion of previous write */
+	while(EECR & (1<<EEPE))
+		;
+
+	/* Set up address register */
+	EEAR = uiAddress;
+
+	/* Start eeprom read by writing EERE */
+	EECR |= (1<<EERE);
+
+	/* Return data from Data Register */
+	return EEDR;
+}
+
+
 int main()
 {
-	
+	uart_init();
+	uart_printstr("Beep:");
+	for (int address = 0x0; address < EEPROM_SIZE; address++)
+	{
+		uart_utoa(address);
+		uart_tx(' ');
+		for (int byte = address + 0; byte < 8; byte++)
+			uart_printhex(EEPROM_read(address));
+	}
 }
 
 
 
+// EEARH =  EEPROM Address Register High
+// 	–			–			–			–			–			–			EEAR9		EEAR8
+// [																	]	[EEPROM address			]
+
+// EEARH =  EEPROM Address Register Low
+//	EEAR7		EEAR6		EEAR5		EEAR4		EEAR3		EEAR2		EEAR1		EEAR0
+// [	EEPROM address																				]
+
+// EEDR – The EEPROM Data Register
+// MSB			-			-			-			-			-			-			LSB
+// [	Data to be written / Data read out															]
 
 
-
-//
-// TWCR - TWI Control Register
-// 	TWINT		TWEA		TWSTA		TWSTO		TWWC		TWEN		----		TWIE
-//	[finished]	[ack enabl]	[ START ]	[ STOP ]	[wr collis]	[TWI enabl]	[		]	[TWI interrupt]
-
-// TWSR - TWI Status Register
-// 	TWS7		TWS6		TWS5		TWS4		TWS3		-----		TWPS1		TWPS0
-//	[TWI logic												]	[		]	[ prescaler				]
-
-// TWDR - TWI Data Register
-// 	TWD7		TWD6		TWD5		TWD4		TWD3		TWD2		TWD1		TWD0
-//	[	DATA to be transmitted (Transmit mode) or received (Receive mode)							]
-
-// TWBR - TWI Bit Rate Register
-// 	TWBR7		TWBR6		TWBR5		TWBR4		TWBR3		TWBR2		TWBR1		TWBR0
-//	[ Division factor for the bit rate generator													]
-
-// TWAMR – TWI (Slave) Address Mask Register
-// 	TWAM7		TWAM6		TWAM5		TWAM4		TWAM3		TWAM2		TWAM1		TWAM0
-//	[ Address of target slave																		]
+// EECR – The EEPROM Control Registe
+// –			–			EEPM1		EEPM0		EERIE		EEMPE		EEPE		EERE
+// [					  ]	[Programming Mode	  ]	[Interrupt]	[MasterWri]	[WriteEnab]	[ReadEnabl]
