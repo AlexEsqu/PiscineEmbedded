@@ -4,7 +4,7 @@
 // hexdump format.
 // 00000000 57 68 61 74 20
 
-#define EEPROM_SIZE 1023
+#define EEPROM_SIZE 1024
 
 
 unsigned char EEPROM_read(unsigned int uiAddress)
@@ -23,18 +23,55 @@ unsigned char EEPROM_read(unsigned int uiAddress)
 	return EEDR;
 }
 
+void printAddr(uint32_t num)
+{
+    const char hex[] = "0123456789abcdef";
+    char buf[7];
+    uint32_t i = 0;
+
+    while (num > 0 && i < sizeof(buf))
+    {
+        buf[i++] = hex[num % 16];
+        num /= 16;
+    }
+
+	while (i < sizeof(buf))
+	{
+		buf[i++] = '0';
+	}
+
+    while (i > 0)
+    {
+        uart_tx(buf[--i]);
+    }
+}
+
 
 int main()
 {
 	uart_init();
-	uart_printstr("Beep:");
-	for (int address = 0x0; address < EEPROM_SIZE; address++)
-	{
-		uart_utoa(address);
-		uart_tx(' ');
-		for (int byte = address + 0; byte < 8; byte++)
-			uart_printhex(EEPROM_read(address));
-	}
+	for (unsigned int address = 0; address < EEPROM_SIZE; address += 16)
+    {
+		printAddr(address);
+		uart_printstr(": ");
+		char buffer[16];
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			int byte = address + i;
+			buffer[i] = EEPROM_read(byte);
+			uart_printhex(buffer[i]);
+			uart_tx(' ');
+		}
+
+		uart_printstr("|");
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			uart_tx(buffer[i]);
+		}
+		uart_printstr("|");
+        	
+        uart_printstr("\r\n");
+    }
 }
 
 

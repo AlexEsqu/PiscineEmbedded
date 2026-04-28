@@ -83,11 +83,10 @@ void uart_printstr(const char* str)
 
 void uart_printhex(long num)
 {
-    const char hex[] = "0123456789ABCDEF";
+    const char hex[] = "0123456789abcdef";
     char buf[8];
     long i = 0;
 
-	uart_printstr("0x");
     if (num == 0)
     {
         uart_tx('0');

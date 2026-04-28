@@ -20,6 +20,15 @@ F_CPU = 16000000UL
 OPEN_SERIAL = -P /dev/ttyUSB0
 SET_PROGRAM = -c arduino
 SET_BAUD = -b 115200
+# AVR_LIBC_DIR=/tmp/avr-libc
+
+# $(AVR_LIBC_DIR)/.CACHETAG:
+# 							rm -rf $(AVR_LIBC_DIR)
+# 							git clone --depth=1 https://github.com/avrdudes/avr-libc/ $(AVR_LIBC_DIR)
+# 							cd $(AVR_LIBC_DIR) && ./bootstrap
+# 							cd $(AVR_LIBC_DIR) && ./configure --build=`./config.guess` --host=avr
+# 							cd $(AVR_LIBC_DIR) && make -j
+# 							touch $(AVR_LIBC_DIR)/.CACHETAG
 
 COMPILER = avr-gcc
 COMPILE_FLAGS = -mmcu=$(CHIP) -I$(INC_DIR) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU)
@@ -41,7 +50,7 @@ asm:		$(ASM)
 run:		all
 			screen /dev/ttyUSB0 115200
 
-clean:
+clean:ke
 			rm -rf $(OBJ_DIR)
 
 re:			clean all
