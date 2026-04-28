@@ -46,6 +46,34 @@ void printAddr(uint32_t num)
     }
 }
 
+void printByte(unsigned char c)
+{
+    const char hex[] = "0123456789abcdef";
+    char buf[2];
+    long i = 0;
+
+    if (c == 0)
+    {
+    	uart_tx('0');
+		uart_tx('0');
+        return;
+    }
+
+	if (c < 8)
+		uart_tx('0');
+
+    while (c > 0 && i < sizeof(buf))
+    {
+        buf[i++] = hex[c % 16];
+        c /= 16;
+    }
+
+    while (i > 0)
+    {
+        uart_tx(buf[--i]);
+    }
+}
+
 
 int main()
 {
@@ -59,7 +87,7 @@ int main()
 		{
 			int byte = address + i;
 			buffer[i] = EEPROM_read(byte);
-			uart_printhex(buffer[i]);
+			printByte(buffer[i]);
 			uart_tx(' ');
 		}
 
