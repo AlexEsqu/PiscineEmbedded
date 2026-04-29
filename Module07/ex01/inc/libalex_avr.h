@@ -134,9 +134,17 @@ void		i2c_enter_master_transmitter();
 
 #define EEPROM_SIZE 1024
 
+typedef struct
+{
+	uint32_t	byteAddress;
+	uint32_t	newValue;
+} eeprom_balaylaka_t;
+
 void		printByte(unsigned char c);
 void		printAddr(uint32_t num);
 unsigned char EEPROM_read(unsigned int uiAddress);
 void		EEPROM_write(unsigned int uiAddress, unsigned char ucData);
+void		hexdumpEEPROM();
+void		hexdumpEEPROMWithModif(eeprom_balaylaka_t result);
 
 #endif

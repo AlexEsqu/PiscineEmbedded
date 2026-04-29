@@ -6,6 +6,7 @@ SRC = 	main.c \
 		timer.c \
 		adc.c \
 		i2c.c \
+		eeprom.c \
 		rgb.c
 
 INC_DIR = inc

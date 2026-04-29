@@ -6,7 +6,7 @@
 
 # define BUFFER_SIZE 8
 
-bool bufferHasSpace(int bufferIndex)
+char bufferHasSpace(int bufferIndex)
 {
 	return (bufferIndex < BUFFER_SIZE - 1);
 }
@@ -19,18 +19,18 @@ void	emptyBuffer(char *str, int strSize)
 	}
 }
 
-bool	isValidColorCode(char* str)
+char	isValidColorCode(char* str)
 {
 	if (str[0] != '#')
-		return false;
+		return 0;
 	for (int i = 1; i <= 6; i++)
 	{
 		if (!(str[i] >= '0' && str[i] <= '9')
 			&& !(str[i] >= 'A' && str[i] <= 'F')
 			&& !(str[i] >= 'a' && str[i] <= 'f'))
-			return false;
+			return 0;
 	}
-	return true;
+	return 1;
 }
 
 uint32_t atoiHex(const char *str)
@@ -101,7 +101,7 @@ uint32_t	promptForColor()
 	char	buffer[BUFFER_SIZE];
 	emptyBuffer(buffer, BUFFER_SIZE);
 	int		bufferIndex = 0;
-	
+
 	while (!isValidColorCode(buffer))
 	{
 		uart_printstr("Please input a valid color hexcode: ");
@@ -126,7 +126,7 @@ int main()
 		uart_printstr("\r\nYou have requested : ");
 		uart_printhex(color);
 		uart_printstr("\r\nPlease, BEHOLD THE LED\r\n\r\n\r\n");
-		
+
 		init_rgb();
 		set_rgb(get_red(color), get_green(color), get_blue(color));
 	}
