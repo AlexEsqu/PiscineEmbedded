@@ -20,7 +20,7 @@ int ft_strcmp(char* str1, char* str2)
 {
 	while (*str1 && *str1++ == *str2++)
 		;
-	return (*str1 == *str2);
+	return (*str1 - *str2);
 }
 
 
@@ -72,7 +72,7 @@ void handleUserTyping(char* buffer, int* bufferIndex, e_state* state)
 		case '\r':
 		{
 			uart_printstr("\r\n");
-			*state = ADDRESS_VALIDATION;
+			*state = VALIDATE_EXECUTE;
 			break;
 		}
 		case '\x1b':

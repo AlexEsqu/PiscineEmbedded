@@ -149,9 +149,49 @@ void		hexdumpEEPROMWithModif(eeprom_balaylaka_t result);
 
 // PROMPT
 
+# define BUFFER_SIZE 56
+# define MIN_CMD_LEN 6
+# define MAX_CMD_LEN 14
+# define MAX_ARG_LEN 34
+
+typedef enum
+{
+	PROMPT,
+	RECEIVE_COMMAND,
+	VALIDATE_EXECUTE
+} e_state;
+
+typedef enum
+{
+	STATUS,
+	SET_ID,
+	SET_PRIO,
+	SET_TAG,
+	FACTORY_RESET,
+	UNKNOWN
+}	e_command;
+
+typedef struct
+{
+	e_command	command;
+	uint32_t	numArg;
+	char		newTag[33];
+} command_content_t;
+
+
+typedef struct
+{
+	uint32_t	magicNumber;
+	uint32_t	nodeId;
+	uint16_t	priority;
+	char		tag[33];
+	uint16_t	integrityCheck;
+} node_t;
+
 void handleUserTyping(char* buffer, int* bufferIndex, e_state* state);
 char	isValidFormat(char* buffer);
 void	bzeroStr(char *str, int size);
 int ft_strcmp(char* str1, char* str2);
+char	isHexDigit(char c);
 
 #endif

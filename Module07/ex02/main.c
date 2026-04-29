@@ -67,80 +67,75 @@
 // the configuration to the next available slot, and successfully retrieves the data from the
 // new location after a reboot.
 
-# define BUFFER_SIZE 56
-# define MIN_CMD_LEN 6
-# define MAX_CMD_LEN 14
 
-typedef enum
+
+e_command	identifyCommand(char* buffer, int* bufferIndex, int* parsingIndex)
 {
-	PROMPT,
-	RECEIVE_COMMAND,
-	VALIDATE_EXECUTE
-} e_state;
-
-typedef enum
-{
-	STATUS,
-	SET_ID,
-	SET_PRIO,
-	SET_TAG,
-	FACTORY_RESET,
-	UNKNOWN
-}	e_command;
-
-typedef struct
-{
-	e_command	command;
-	uint32_t	numArg;
-	char		newTag[33];
-} command_content_t;
-
-
-typedef struct
-{
-	uint32_t	magicNumber;
-	uint32_t	nodeId;
-	uint16_t	priority;
-	char		tag[33];
-	uint16_t	integrityCheck;
-} node_t;
-
-
-e_command	identifyCommand(buffer)
-{
-	if (!ft_strcmp(buffer, "STATUS"))
+	char command[MAX_CMD_LEN + 1];
+	bzeroStr(command, MAX_CMD_LEN);
+	while (*parsingIndex < *bufferIndex
+			&& buffer[*parsingIndex] != ' ' 
+			&& *parsingIndex < MAX_CMD_LEN)
+	{
+		command[*parsingIndex] = buffer[*parsingIndex];
+		(*parsingIndex)++;
+	}
+	command[*parsingIndex] = '\0';
+	
+	if (ft_strcmp(buffer, "STATUS") == 0)
 		return STATUS;
-	if (!ft_strcmp(buffer, "SET_ID"))
+	if (ft_strcmp(buffer, "SET_ID") == 0)
 		return SET_ID;
-	if (!ft_strcmp(buffer, "SET_PRIO"))
+	if (ft_strcmp(buffer, "SET_PRIO") == 0)
 		return SET_PRIO;
-	if (!ft_strcmp(buffer, "SET_TAG"))
+	if (ft_strcmp(buffer, "SET_TAG") == 0)
 		return SET_TAG;
-	if (!ft_strcmp(buffer, "FACTORY_RESET"))
+	if (ft_strcmp(buffer, "FACTORY_RESET") == 0)
 		return FACTORY_RESET;
-	return UNKOWN;
+	return UNKNOWN;
 }
 
-command_content_t	parseCommand(buffer, bufferIndex)
+void	identifyArgument(char* buffer, int* bufferIndex, int* parsingIndex, command_content_t* result)
+{
+	char argument[MAX_ARG_LEN + 1];
+	bzeroStr(argument, MAX_ARG_LEN);
+	while (*parsingIndex < *bufferIndex
+			&& buffer[*parsingIndex] != ' ' 
+			&& *parsingIndex < MAX_ARG_LEN)
+	{
+		argument[*parsingIndex] = buffer[*parsingIndex];
+		(*parsingIndex)++;
+	}
+	argument[*parsingIndex] = '\0';
+	
+	if (ft_strcmp(buffer, "SET_ID") == 0)
+		return SET_ID;
+	if (ft_strcmp(buffer, "SET_PRIO") == 0)
+		return SET_PRIO;
+	if (ft_strcmp(buffer, "SET_TAG") == 0)
+		return SET_TAG;
+	if (ft_strcmp(buffer, "FACTORY_RESET") == 0)
+		return FACTORY_RESET;
+	return UNKNOWN;
+}
+
+command_content_t	parseCommand(char* buffer, int bufferIndex)
 {
 	command_content_t	result;
 	int parsingIndex = 0;
 
-	char command[MAX_CMD_LEN];
-	bzeroStr(command);
-	while (buffer[parsingIndex] 
-			&& buffer[parsingIndex] != ' ' 
-			&& parsingIndex < MAX_CMD_LEN)
-	{
-		command[parsingIndex] = buffer[parsingIndex];
-		parsingIndex++;
-	}
-	result.command = identifyCommand(command);
+	result.command = identifyCommand(buffer, &bufferIndex, &parsingIndex);
+
+	uart_printstr("Command id as: ");
+	uart_printhex(result.command);
+	uart_printstr("\r\n");
 
 	if (result.command == STATUS || result.command == FACTORY_RESET)
 		return result;
 
 	
+
+	return result;
 }
 
 
@@ -150,7 +145,8 @@ int main()
 {
 	uart_init();
 
-	e_state state = PROMPT; 
+	e_state state = PROMPT;
+	command_content_t command;
 
 	char	buffer[BUFFER_SIZE];
 	int		bufferIndex = 0;
@@ -162,6 +158,8 @@ int main()
 		{
 			case PROMPT:
 			{
+				bzeroStr(buffer, BUFFER_SIZE);
+				bufferIndex = 0;
 				uart_printstr("> ");
 				state = RECEIVE_COMMAND;
 				break;
@@ -169,13 +167,16 @@ int main()
 
 			case RECEIVE_COMMAND:
 			{
-				handleUserTyping(buffer, bufferIndex, state);
+				handleUserTyping(buffer, &bufferIndex, &state);
 				break;
 			}
 
 			case VALIDATE_EXECUTE:
 			{
-
+				command = parseCommand(buffer, bufferIndex);
+				uart_printhex(command.command);
+				uart_printstr("\r\n");
+				state = PROMPT;
 			}
 
 		}
