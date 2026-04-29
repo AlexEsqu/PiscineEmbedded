@@ -1,6 +1,53 @@
 #include "libalex_avr.h"
 
 
+int	ft_isdigit(int c)
+{
+	if (c >= '0' && c <= '9')
+		return (1);
+	return (0);
+}
+
+uint32_t	ft_atou(const char *str)
+{
+	uint32_t	result;
+
+	result = 0;
+	while (*str == ' ' || *str == '\t' || *str == '\n'
+		|| *str == '\r' || *str == '\f' || *str == '\v')
+		str++;
+
+	while (ft_isdigit(*str))
+		result = result * 10 + (*str++ - '0');
+	return (result);
+}
+
+int	ft_atoi(const char *str)
+{
+	int	i;
+	int	minus;
+	int	number;
+
+	i = 0;
+	minus = -1;
+	number = 0;
+	while ((str[i] >= 9 && str[i] <= 13) || str[i] == ' ')
+		i++;
+	if (str[i] == '+' || str[i] == '-')
+	{
+		if (str[i] == '-')
+			minus = minus * (-1);
+		i++;
+	}
+	while (str[i] >= '0' && str[i] <= '9')
+	{
+		number = number * 10 - (str[i] - '0');
+		i++;
+	}
+	return (number * minus);
+}
+
+
 void	bzeroStr(char *str, int size)
 {
 	for (int i = 0; i < size; i++)
@@ -23,6 +70,42 @@ int ft_strcmp(char* str1, char* str2)
 	return (*str1 - *str2);
 }
 
+uint32_t ft_strlen(char* str)
+{
+	uint32_t len = 0;
+	while (str[len++])
+		;
+	return len;
+}
+
+void	*ft_memmove(void *dest, const void *src, uint16_t len)
+{
+	uint32_t			i;
+	unsigned char	*strsrc;
+	unsigned char	*strdest;
+
+	i = 0;
+	strsrc = (unsigned char *)src;
+	strdest = (unsigned char *)dest;
+	if (dest > src)
+	{
+		while (len > 0)
+		{
+			len--;
+			strdest[len] = strsrc[len];
+		}
+	}
+	else if (dest < src)
+	{
+		while (i < len)
+		{
+			strdest[i] = strsrc[i];
+			i++;
+		}
+	}
+	return (dest);
+}
+
 
 char	isHexDigit(char c)
 {
@@ -36,6 +119,16 @@ char	isHexDigit(char c)
 		return 1;
 
 	return 0;
+}
+
+void	*ft_memset(void *ptr, int value, unsigned long len)
+{
+	unsigned char	*str;
+
+	str = ptr;
+	while (len--)
+		*str++ = (unsigned char)value;
+	return (ptr);
 }
 
 char	isValidFormat(char* buffer)

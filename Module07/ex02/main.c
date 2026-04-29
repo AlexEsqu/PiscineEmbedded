@@ -95,8 +95,51 @@ e_command	identifyCommand(char* buffer, int* bufferIndex, int* parsingIndex)
 	return UNKNOWN;
 }
 
+void	parseNewTag(char* argumentStr, command_content_t* result)
+{
+	uint16_t len = ft_strlen(argumentStr);
+	
+	if (argumentStr[0] != '\"' || argumentStr[len] != '\"')
+	{
+		result->command = UNKNOWN;
+		return;
+	}
+
+	ft_memmove(result->newTag, &argumentStr[1], len - 2);
+}
+
+void	parseNewNodeId(char* argumentStr, command_content_t* result)
+{
+	// vaguely guard against overflow
+	if (ft_strlen(argumentStr) > 10)
+	{
+		result->command = UNKNOWN;
+		return;
+	}
+
+	result->newId = ft_atou(argumentStr);
+}
+
+void	parseNewPriority(char* argumentStr, command_content_t* result)
+{
+	// vaguely guard against overflow
+	if (ft_strlen(argumentStr) > 5)
+	{
+		result->command = UNKNOWN;
+		return;
+	}
+
+	result->newId = ft_atoi(argumentStr);
+}
+
 void	identifyArgument(char* buffer, int* bufferIndex, int* parsingIndex, command_content_t* result)
 {
+	if (bufferIndex - parsingIndex > MAX_ARG_LEN + 1)
+	{
+		result->command = UNKNOWN;
+		return;
+	}
+	
 	char argument[MAX_ARG_LEN + 1];
 	bzeroStr(argument, MAX_ARG_LEN);
 	while (*parsingIndex < *bufferIndex
@@ -107,16 +150,27 @@ void	identifyArgument(char* buffer, int* bufferIndex, int* parsingIndex, command
 		(*parsingIndex)++;
 	}
 	argument[*parsingIndex] = '\0';
-	
-	if (ft_strcmp(buffer, "SET_ID") == 0)
-		return SET_ID;
-	if (ft_strcmp(buffer, "SET_PRIO") == 0)
-		return SET_PRIO;
-	if (ft_strcmp(buffer, "SET_TAG") == 0)
-		return SET_TAG;
-	if (ft_strcmp(buffer, "FACTORY_RESET") == 0)
-		return FACTORY_RESET;
-	return UNKNOWN;
+
+	switch (result->command)
+	{
+		case SET_ID:
+		{
+			parseNewNodeId(argument, result);
+			return;
+		}
+		case SET_TAG:
+		{
+			parseNewTag(argument, result);
+			return;
+		}
+		case SET_PRIO:
+		{
+			parseNewPriority(argument, result);
+			return;
+		}
+		default:
+			return;
+	}
 }
 
 command_content_t	parseCommand(char* buffer, int bufferIndex)
@@ -133,11 +187,24 @@ command_content_t	parseCommand(char* buffer, int bufferIndex)
 	if (result.command == STATUS || result.command == FACTORY_RESET)
 		return result;
 
-	
+	identifyArgument(buffer, &bufferIndex, &parsingIndex, &result);
 
 	return result;
 }
 
+
+void	printCommand(command_content_t command)
+{
+	uart_printstr("\r\nCommand is: ");
+	uart_itoa(command.command);
+	uart_printstr("\r\nNew Tag is: ");
+	uart_printstr(command.newTag);
+	uart_printstr("\r\nNew ID is: ");
+	uart_itoa(command.newId);
+	uart_printstr("\r\nNew Priority is: ");
+	uart_itoa(command.newPriority);
+	uart_printstr("\r\n");
+}
 
 
 
@@ -147,6 +214,7 @@ int main()
 
 	e_state state = PROMPT;
 	command_content_t command;
+	ft_memset(&command, 0, sizeof(command));
 
 	char	buffer[BUFFER_SIZE];
 	int		bufferIndex = 0;
@@ -160,6 +228,7 @@ int main()
 			{
 				bzeroStr(buffer, BUFFER_SIZE);
 				bufferIndex = 0;
+				ft_memset(&command, 0, sizeof(command));
 				uart_printstr("> ");
 				state = RECEIVE_COMMAND;
 				break;
@@ -174,7 +243,7 @@ int main()
 			case VALIDATE_EXECUTE:
 			{
 				command = parseCommand(buffer, bufferIndex);
-				uart_printhex(command.command);
+				printCommand(command);
 				uart_printstr("\r\n");
 				state = PROMPT;
 			}

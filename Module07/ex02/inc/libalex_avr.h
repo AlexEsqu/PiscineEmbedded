@@ -174,7 +174,8 @@ typedef enum
 typedef struct
 {
 	e_command	command;
-	uint32_t	numArg;
+	uint32_t	newId;
+	uint16_t	newPriority;
 	char		newTag[33];
 } command_content_t;
 
@@ -193,5 +194,10 @@ char	isValidFormat(char* buffer);
 void	bzeroStr(char *str, int size);
 int ft_strcmp(char* str1, char* str2);
 char	isHexDigit(char c);
+uint32_t ft_strlen(char* str);
+void	*ft_memmove(void *dest, const void *src, uint16_t len);
+uint32_t	ft_atou(const char *str);
+int			ft_atoi(const char *str);
+void	*ft_memset(void *ptr, int value, unsigned long len);
 
 #endif
