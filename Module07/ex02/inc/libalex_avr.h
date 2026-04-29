@@ -153,6 +153,7 @@ void		hexdumpEEPROMWithModif(eeprom_balaylaka_t result);
 # define MIN_CMD_LEN 6
 # define MAX_CMD_LEN 14
 # define MAX_ARG_LEN 34
+# define TAG_SIZE 33
 
 typedef enum
 {
@@ -176,7 +177,7 @@ typedef struct
 	e_command	command;
 	uint32_t	newId;
 	uint16_t	newPriority;
-	char		newTag[33];
+	char		newTag[TAG_SIZE];
 } command_content_t;
 
 
@@ -199,5 +200,7 @@ void	*ft_memmove(void *dest, const void *src, uint16_t len);
 uint32_t	ft_atou(const char *str);
 int			ft_atoi(const char *str);
 void	*ft_memset(void *ptr, int value, unsigned long len);
+int	ft_strlcpy(char *dest, const char *src, int size);
+
 
 #endif

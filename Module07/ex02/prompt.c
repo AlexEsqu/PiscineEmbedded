@@ -8,6 +8,25 @@ int	ft_isdigit(int c)
 	return (0);
 }
 
+int	ft_strlcpy(char *dest, const char *src, int size)
+{
+	int	i;
+
+	i = 0;
+	if (size != 0)
+	{
+		while (i < size - 1 && src[i] != '\0')
+		{
+			dest[i] = src[i];
+			i++;
+		}
+		dest[i] = '\0';
+	}
+	while (src[i])
+		i++;
+	return (i);
+}
+
 uint32_t	ft_atou(const char *str)
 {
 	uint32_t	result;
@@ -65,6 +84,12 @@ char bufferHasSpace(int bufferIndex)
 
 int ft_strcmp(char* str1, char* str2)
 {
+	uart_printstr("\r\n");
+	uart_printstr(str1);
+	uart_printstr(" vs ");
+	uart_printstr(str2);
+	uart_printstr("\r\n");
+
 	while (*str1 && *str1++ == *str2++)
 		;
 	return (*str1 - *str2);

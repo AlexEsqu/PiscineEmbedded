@@ -67,30 +67,30 @@
 // the configuration to the next available slot, and successfully retrieves the data from the
 // new location after a reboot.
 
+# define MAGIC_NUMER 0xF0
 
-
-e_command	identifyCommand(char* buffer, int* bufferIndex, int* parsingIndex)
+e_command	identifyCommand(char* buffer, int bufferIndex, int* parsingIndex)
 {
 	char command[MAX_CMD_LEN + 1];
 	bzeroStr(command, MAX_CMD_LEN);
-	while (*parsingIndex < *bufferIndex
-			&& buffer[*parsingIndex] != ' ' 
+	while (*parsingIndex < bufferIndex
+			&& buffer[*parsingIndex] != ' '
 			&& *parsingIndex < MAX_CMD_LEN)
 	{
 		command[*parsingIndex] = buffer[*parsingIndex];
 		(*parsingIndex)++;
 	}
 	command[*parsingIndex] = '\0';
-	
-	if (ft_strcmp(buffer, "STATUS") == 0)
+
+	if (ft_strcmp(command, "STATUS") == 0)
 		return STATUS;
-	if (ft_strcmp(buffer, "SET_ID") == 0)
+	if (ft_strcmp(command, "SET_ID") == 0)
 		return SET_ID;
-	if (ft_strcmp(buffer, "SET_PRIO") == 0)
+	if (ft_strcmp(command, "SET_PRIO") == 0)
 		return SET_PRIO;
-	if (ft_strcmp(buffer, "SET_TAG") == 0)
+	if (ft_strcmp(command, "SET_TAG") == 0)
 		return SET_TAG;
-	if (ft_strcmp(buffer, "FACTORY_RESET") == 0)
+	if (ft_strcmp(command, "FACTORY_RESET") == 0)
 		return FACTORY_RESET;
 	return UNKNOWN;
 }
@@ -98,14 +98,15 @@ e_command	identifyCommand(char* buffer, int* bufferIndex, int* parsingIndex)
 void	parseNewTag(char* argumentStr, command_content_t* result)
 {
 	uint16_t len = ft_strlen(argumentStr);
-	
-	if (argumentStr[0] != '\"' || argumentStr[len] != '\"')
+
+	if (argumentStr[0] != '\"' || argumentStr[len - 2] != '\"')
 	{
+		uart_printstr("Tag argument is invalid\r\b");
 		result->command = UNKNOWN;
 		return;
 	}
 
-	ft_memmove(result->newTag, &argumentStr[1], len - 2);
+	ft_strlcpy(result->newTag, &argumentStr[1], len - 2);
 }
 
 void	parseNewNodeId(char* argumentStr, command_content_t* result)
@@ -113,6 +114,7 @@ void	parseNewNodeId(char* argumentStr, command_content_t* result)
 	// vaguely guard against overflow
 	if (ft_strlen(argumentStr) > 10)
 	{
+		uart_printstr("Node ID argument is invalid\r\b");
 		result->command = UNKNOWN;
 		return;
 	}
@@ -125,31 +127,43 @@ void	parseNewPriority(char* argumentStr, command_content_t* result)
 	// vaguely guard against overflow
 	if (ft_strlen(argumentStr) > 5)
 	{
+		uart_printstr("Priority argument is invalid\r\b");
 		result->command = UNKNOWN;
 		return;
 	}
 
-	result->newId = ft_atoi(argumentStr);
+	result->newPriority = ft_atoi(argumentStr);
 }
 
-void	identifyArgument(char* buffer, int* bufferIndex, int* parsingIndex, command_content_t* result)
+void	identifyArgument(char* buffer, int bufferIndex, int* parsingIndex, command_content_t* result)
 {
-	if (bufferIndex - parsingIndex > MAX_ARG_LEN + 1)
+	uart_printstr("\r\nArgument:[");
+	uart_printstr(&buffer[*parsingIndex]);
+	uart_printstr("]\r\n");
+	(*parsingIndex)++;
+
+	if (bufferIndex - *parsingIndex > MAX_ARG_LEN)
 	{
 		result->command = UNKNOWN;
 		return;
 	}
-	
+
 	char argument[MAX_ARG_LEN + 1];
 	bzeroStr(argument, MAX_ARG_LEN);
-	while (*parsingIndex < *bufferIndex
-			&& buffer[*parsingIndex] != ' ' 
-			&& *parsingIndex < MAX_ARG_LEN)
+	int argIndex = 0;
+	while (*parsingIndex <= bufferIndex)
 	{
-		argument[*parsingIndex] = buffer[*parsingIndex];
+		argument[argIndex] = buffer[*parsingIndex];
+		uart_tx(argument[argIndex]);
+		uart_printstr("\r\n");
+		argIndex++;
 		(*parsingIndex)++;
 	}
-	argument[*parsingIndex] = '\0';
+	argument[argIndex] = '\0';
+
+	uart_printstr("Argument extracted as: [");
+	uart_printstr(argument);
+	uart_printstr("]\r\n");
 
 	switch (result->command)
 	{
@@ -173,12 +187,21 @@ void	identifyArgument(char* buffer, int* bufferIndex, int* parsingIndex, command
 	}
 }
 
+void	clearCommand(command_content_t* command)
+{
+	command->command = UNKNOWN;
+	command->newId = 0;
+	command->newPriority = 0;
+	bzeroStr(command->newTag, TAG_SIZE);
+}
+
 command_content_t	parseCommand(char* buffer, int bufferIndex)
 {
 	command_content_t	result;
+	clearCommand(&result);
 	int parsingIndex = 0;
 
-	result.command = identifyCommand(buffer, &bufferIndex, &parsingIndex);
+	result.command = identifyCommand(buffer, bufferIndex, &parsingIndex);
 
 	uart_printstr("Command id as: ");
 	uart_printhex(result.command);
@@ -187,26 +210,26 @@ command_content_t	parseCommand(char* buffer, int bufferIndex)
 	if (result.command == STATUS || result.command == FACTORY_RESET)
 		return result;
 
-	identifyArgument(buffer, &bufferIndex, &parsingIndex, &result);
+	uart_printstr("\r\nArgument should be:");
+	uart_printstr(&buffer[parsingIndex]);
+	identifyArgument(buffer, bufferIndex, &parsingIndex, &result);
 
 	return result;
 }
 
 
-void	printCommand(command_content_t command)
+void	printCommand(command_content_t* command)
 {
 	uart_printstr("\r\nCommand is: ");
-	uart_itoa(command.command);
+	uart_itoa(command->command);
 	uart_printstr("\r\nNew Tag is: ");
-	uart_printstr(command.newTag);
+	uart_printstr(command->newTag);
 	uart_printstr("\r\nNew ID is: ");
-	uart_itoa(command.newId);
+	uart_itoa(command->newId);
 	uart_printstr("\r\nNew Priority is: ");
-	uart_itoa(command.newPriority);
+	uart_itoa(command->newPriority);
 	uart_printstr("\r\n");
 }
-
-
 
 int main()
 {
@@ -214,7 +237,6 @@ int main()
 
 	e_state state = PROMPT;
 	command_content_t command;
-	ft_memset(&command, 0, sizeof(command));
 
 	char	buffer[BUFFER_SIZE];
 	int		bufferIndex = 0;
@@ -228,7 +250,6 @@ int main()
 			{
 				bzeroStr(buffer, BUFFER_SIZE);
 				bufferIndex = 0;
-				ft_memset(&command, 0, sizeof(command));
 				uart_printstr("> ");
 				state = RECEIVE_COMMAND;
 				break;
@@ -243,13 +264,13 @@ int main()
 			case VALIDATE_EXECUTE:
 			{
 				command = parseCommand(buffer, bufferIndex);
-				printCommand(command);
+				printCommand(&command);
 				uart_printstr("\r\n");
 				state = PROMPT;
 			}
 
 		}
-		
+
 	}
 }
 
