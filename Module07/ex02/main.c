@@ -70,7 +70,8 @@
 
 const uint16_t c_slot_address[] = {0, 64, 128, 192};
 
-uint8_t bug_tester = 0;
+uint8_t bug_tester = 4;
+uint8_t corruption_detected = 0;
 
 typedef enum
 {
@@ -78,7 +79,8 @@ typedef enum
 	NODE_SLOT_1,
 	NODE_SLOT_2,
 	NODE_SLOT_3,
-	NONE
+	NONE,
+	ALL_CORRUPTED
 } e_node_slots;
 
 node_t	readNode(e_node_slots nodeSlot)
@@ -93,8 +95,11 @@ node_t	readNode(e_node_slots nodeSlot)
 	return (node);
 }
 
-e_node_slots	findNode()
+e_node_slots	findCurrentNode()
 {
+	if (corruption_detected == 1)
+		return ALL_CORRUPTED;
+
 	for (e_node_slots slot = NODE_SLOT_0; slot < NONE; slot++)
 	{
 		node_t potential_node = readNode(slot);
@@ -194,7 +199,7 @@ node_t	createNode(command_content_t* command)
 	return (newNode);
 }
 
-void	relocateNode(e_node_slots nodeSlot, node_t* node, e_state* state)
+void	relocateNode(e_node_slots nodeSlot, node_t* node)
 {
 	int writeStatus = 1;
 	uart_printstr("Corruption detected.\r\n");
@@ -219,18 +224,18 @@ void	relocateNode(e_node_slots nodeSlot, node_t* node, e_state* state)
 	if (writeStatus != 0)
 	{
 		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
-		*state = CORRUPTED;
+		corruption_detected = 1;
 	}
 	else
 		uart_printstr("Done.\r\n");
 }
 
-void	modifyNode(command_content_t* command, e_state* state)
+void	modifyNode(command_content_t* command)
 {
 	node_t updatedNode;
 
-	e_node_slots nodeSlot = findNode();
-	if (nodeSlot == NONE)
+	e_node_slots nodeSlot = findCurrentNode();
+	if (nodeSlot == NONE || nodeSlot == ALL_CORRUPTED)
 	{
 		updatedNode = createNode(command);
 		nodeSlot = NODE_SLOT_0;
@@ -240,16 +245,21 @@ void	modifyNode(command_content_t* command, e_state* state)
 
 	int writeStatus = writeNode(&updatedNode, nodeSlot);
 	if (writeStatus == 0)
+	{
+		corruption_detected = 0;
 		return;
+	}
 
-	relocateNode(nodeSlot, &updatedNode, state);
+	relocateNode(nodeSlot, &updatedNode);
 }
 
 void	printStatus()
 {
-	e_node_slots nodeSlot = findNode();
+	e_node_slots nodeSlot = findCurrentNode();
 	if (nodeSlot == NONE)
 		uart_printstr("Node unconfigured\r\n");
+	else if (nodeSlot == ALL_CORRUPTED)
+		uart_printstr("CRITICAL: Data corruption detected!\r\n");
 	else
 		printNode(nodeSlot);
 }
@@ -263,7 +273,7 @@ void	eraseAllNodes()
 }
 
 
-void	executeCommand(command_content_t* command, e_state* state)
+void	executeCommand(command_content_t* command)
 {
 	// printCommand(command);
 
@@ -277,6 +287,7 @@ void	executeCommand(command_content_t* command, e_state* state)
 		case FACTORY_RESET:
 		{
 			eraseAllNodes();
+			corruption_detected = 0;
 			return;
 		}
 		case HEXDUMP:
@@ -286,7 +297,7 @@ void	executeCommand(command_content_t* command, e_state* state)
 		}
 		default:
 		{
-			modifyNode(command, state);
+			modifyNode(command);
 		}
 	}
 }
@@ -325,17 +336,11 @@ int main()
 			case VALIDATE_EXECUTE:
 			{
 				command = parseCommand(buffer, bufferIndex);
-				executeCommand(&command, &state);
-				if (state != CORRUPTED)
-					state = PROMPT;
+				executeCommand(&command);
+				state = PROMPT;
 				break;
 			}
 
-			case CORRUPTED:
-			{
-				uart_printstr("CRITICAL EEPROM FAILURE\r\n");
-				break;
-			}
 			default:
 			{
 				break;

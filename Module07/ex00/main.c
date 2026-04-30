@@ -26,7 +26,7 @@ unsigned char EEPROM_read(unsigned int uiAddress)
 void printAddr(uint32_t num)
 {
     const char hex[] = "0123456789abcdef";
-    char buf[7];
+    char buf[8];
     uint32_t i = 0;
 
     while (num > 0 && i < sizeof(buf))
@@ -108,7 +108,7 @@ int main()
 				uart_tx('.');
 		}
 		uart_printstr("|");
-        	
+
         uart_printstr("\r\n");
     }
 }

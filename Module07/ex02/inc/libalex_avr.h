@@ -164,8 +164,7 @@ typedef enum
 	PROMPT,
 	RECEIVE_COMMAND,
 	VALIDATE_EXECUTE,
-	RELOCATE,
-	CORRUPTED
+	RELOCATE
 } e_state;
 
 typedef enum
@@ -183,7 +182,7 @@ typedef struct
 {
 	e_command	command;
 	uint32_t	newId;
-	uint16_t	newPriority;
+	int16_t		newPriority;
 	char		newTag[TAG_SIZE];
 } command_content_t;
 
@@ -192,7 +191,7 @@ typedef struct
 {
 	uint32_t	magicNumber;
 	uint32_t	nodeId;
-	int			priority;
+	int16_t		priority;
 	char		tag[TAG_SIZE];
 	uint16_t	integrityCheck;
 } node_t;
