@@ -116,7 +116,7 @@ char	isValidFormat(char* buffer)
 	for (int i = 0; i < BUFFER_SIZE && buffer[i]; i++)
 	{
 		if (!isHexDigit(buffer[i]) && buffer[i] != ' ')
-			return 0;
+			return 0;	
 	}
 
 	if (buffer[2] != ' ' && buffer[3] != ' ')
@@ -175,6 +175,8 @@ int main()
 			case PROMPT_ADDRESS:
 			{
 				uart_printstr("Please input an address byte, and a value for it:\r\n> ");
+				bzeroStr(buffer, BUFFER_SIZE);
+				bufferIndex = 0;
 				state = RECEIVE_ADDRESS;
 				result.newValue = 0;
 				result.byteAddress = 0;
@@ -188,7 +190,10 @@ int main()
 			case ADDRESS_VALIDATION:
 			{
 				if (isValidFormat(buffer))
+				{
 					state = WRONG_ADDRESS;
+					break;
+				}
 				result = extractAddressAndNewValue(buffer);
 				if (result.byteAddress >= EEPROM_SIZE)
 					state = WRONG_ADDRESS;
@@ -201,8 +206,6 @@ int main()
 			case WRONG_ADDRESS:
 			{
 				uart_printstr("Wrong address format, please try again.\r\n");
-				bzeroStr(buffer, BUFFER_SIZE);
-				bufferIndex = 0;
 				state = PROMPT_ADDRESS;
 				break;
 			}
