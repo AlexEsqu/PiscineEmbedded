@@ -75,7 +75,7 @@ void printByte(unsigned char c)
 		return;
 	}
 
-	if (c < 8)
+	if (c < 16)
 		uart_tx('0');
 
 	while (c > 0 && i < sizeof(buf))

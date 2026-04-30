@@ -54,7 +54,7 @@ asm:		$(ASM)
 run:		all
 			screen /dev/ttyUSB0 115200
 
-clean:ke
+clean:
 			rm -rf $(OBJ_DIR)
 
 re:			clean all
