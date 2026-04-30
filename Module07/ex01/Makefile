@@ -32,7 +32,7 @@ SET_BAUD = -b 115200
 # 							touch $(AVR_LIBC_DIR)/.CACHETAG
 
 COMPILER = avr-gcc
-COMPILE_FLAGS = -mmcu=$(CHIP) -I$(INC_DIR) -Wall -Wextra -Werror -Os -DF_CPU=$(F_CPU)
+COMPILE_FLAGS = -mmcu=$(CHIP) -I$(INC_DIR) -Os -Wall -Wextra -Werror -DF_CPU=$(F_CPU)
 
 CONVERT_TO_HEX = avr-objcopy -O ihex
 

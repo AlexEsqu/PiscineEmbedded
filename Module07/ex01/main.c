@@ -6,7 +6,7 @@
 // with the byte in red.
 // If the byte already had this value, nothing should happen.
 
-# define BUFFER_SIZE 8
+# define BUFFER_SIZE 10
 
 typedef enum
 {
@@ -27,7 +27,7 @@ void	bzeroStr(char *str, int size)
 
 char bufferHasSpace(int bufferIndex)
 {
-	if (bufferIndex > BUFFER_SIZE - 1)
+	if (bufferIndex >= BUFFER_SIZE - 1)
 		return 0;
 	return 1;
 }
@@ -35,7 +35,6 @@ char bufferHasSpace(int bufferIndex)
 void handleUserTyping(char* buffer, int* bufferIndex, e_state* state)
 {
 	char currentChar = uart_rx();
-	(void)state;
 
 	switch (currentChar)
 	{
@@ -96,7 +95,6 @@ uint32_t atoiHex(const char *str)
 	return num;
 }
 
-
 char	isHexDigit(char c)
 {
 	if (c >= '0' && c <= '9')
@@ -116,10 +114,10 @@ char	isValidFormat(char* buffer)
 	for (int i = 0; i < BUFFER_SIZE && buffer[i]; i++)
 	{
 		if (!isHexDigit(buffer[i]) && buffer[i] != ' ')
-			return 0;	
+			return 0;
 	}
 
-	if (buffer[2] != ' ' && buffer[3] != ' ')
+	if (buffer[2] != ' ' && buffer[3] != ' ' && buffer[4] != ' ')
 		return 0;
 
 	return 1;
@@ -127,30 +125,30 @@ char	isValidFormat(char* buffer)
 
 eeprom_balaylaka_t	extractAddressAndNewValue(char* buffer)
 {
-	char				address[4];
-	char				newByte[4];
+	char				address[6];
+	char				newByte[3];
 	int					i = 0;
 	int					j = 0;
 	eeprom_balaylaka_t	result;
 
-	while (isHexDigit(buffer[i]))
+	while (isHexDigit(buffer[i]) && i < 5)
 	{
 		address[i] = buffer[i];
 		i++;
 	}
+	address[i] = '\0';
 
-	address[i] = 0;
+	// skip the space
 	i++;
 
 	j = 0;
-	while (isHexDigit(buffer[i]))
+	while (isHexDigit(buffer[i]) && j <= 2)
 	{
 		newByte[j] = buffer[i];
 		i++;
 		j++;
 	}
-
-	newByte[j] = 0;
+	newByte[j] = '\0';
 
 	result.byteAddress = atoiHex(address);
 	result.newValue = atoiHex(newByte);
@@ -166,7 +164,6 @@ int main()
 	int		bufferIndex = 0;
 	e_state	state = PROMPT_ADDRESS;
 	eeprom_balaylaka_t	result = {0};
-	bzeroStr(buffer, BUFFER_SIZE);
 
 	while (1)
 	{
@@ -177,6 +174,7 @@ int main()
 				uart_printstr("Please input an address byte, and a value for it:\r\n> ");
 				bzeroStr(buffer, BUFFER_SIZE);
 				bufferIndex = 0;
+
 				state = RECEIVE_ADDRESS;
 				result.newValue = 0;
 				result.byteAddress = 0;
@@ -189,7 +187,7 @@ int main()
 			}
 			case ADDRESS_VALIDATION:
 			{
-				if (isValidFormat(buffer))
+				if (!isValidFormat(buffer))
 				{
 					state = WRONG_ADDRESS;
 					break;
@@ -219,8 +217,6 @@ int main()
 				if (EEPROM_read(result.byteAddress) != result.newValue)
 					EEPROM_write(result.byteAddress, result.newValue);
 				hexdumpEEPROMWithModif(result);
-				bzeroStr(buffer, BUFFER_SIZE);
-				bufferIndex = 0;
 				state = PROMPT_ADDRESS;
 				break;
 			}
