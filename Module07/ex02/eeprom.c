@@ -2,8 +2,8 @@
 
 unsigned char EEPROM_read(unsigned int uiAddress)
 {
-	if (uiAddress > EEPROM_SIZE)
-		return (0);
+	if (uiAddress >= EEPROM_SIZE)
+        return 0xFF;
 
 	/* Wait for completion of previous write */
 	while(EECR & (1<<EEPE))
@@ -165,16 +165,15 @@ void	hexdumpEEPROMWithModif(eeprom_balaylaka_t result)
 void	hexdumpEEPROMAroundAddress(uint16_t addr)
 {
 	long sixteenLinesBeforeModif = addr - (16 * 6);
-	if (sixteenLinesBeforeModif < 0)
-		sixteenLinesBeforeModif = 0;
+    if (sixteenLinesBeforeModif < 0)
+        sixteenLinesBeforeModif = 0;
 
-	uint32_t sixteenLinesAfterModif = addr + (16 * 6);
-	if (sixteenLinesAfterModif > EEPROM_SIZE)
-		sixteenLinesBeforeModif = EEPROM_SIZE;
+    uint32_t sixteenLinesAfterModif = addr + (16 * 6);
+    if (sixteenLinesAfterModif > EEPROM_SIZE)
+        sixteenLinesAfterModif = EEPROM_SIZE;
 
-	for (unsigned int address = sixteenLinesBeforeModif; address <  sixteenLinesAfterModif; address += 16)
-	// for (unsigned int address = 0; address < EEPROM_SIZE; address += 16)
-	{
+    for (unsigned int address = sixteenLinesBeforeModif; address <  sixteenLinesAfterModif; address += 16)
+    {
 		printAddr(address);
 		uart_printstr(": ");
 		char buffer[16];

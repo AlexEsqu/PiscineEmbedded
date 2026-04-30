@@ -1,17 +1,20 @@
 #include "libalex_avr.h"
 
+#include <stddef.h>
+
 uint16_t	makeChecksum16(node_t *node)
 {
     uint32_t sum = 0;
-    uint8_t *bytes = (uint8_t *)node;
-    
-    for (uint8_t byteAddress = 0; byteAddress < NODE_SIZE_WITHOUT_INTEGRITY_CHECK; byteAddress++)
+    const uint8_t *bytes = (const uint8_t *)node;
+
+    for (uint8_t i = 0; i < NODE_SIZE_WITHOUT_INTEGRITY_CHECK; ++i)
     {
-        uart_printhex(bytes[byteAddress]);
-        sum += bytes[byteAddress];
+        sum += bytes[i];
     }
 
-    return ((uint16_t)(sum & 0xFFFF0000 >> 16) + (uint16_t)(sum & 0x0000FFFF));
+    sum = (sum & 0xFFFF) + (sum >> 16);
+    sum = (sum & 0xFFFF) + (sum >> 16);
+    return (uint16_t)sum;
 }
 
 int	verifyChecksum16(node_t *node)

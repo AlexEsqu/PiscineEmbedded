@@ -82,13 +82,7 @@ char bufferHasSpace(int bufferIndex)
 	return 1;
 }
 
-int ft_strcmp(char* str1, char* str2)
-{
 
-	while (*str1 && *str1++ == *str2++)
-		;
-	return (*str1 - *str2);
-}
 
 uint32_t ft_strlen(char* str)
 {

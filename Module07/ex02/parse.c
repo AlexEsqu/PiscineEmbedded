@@ -3,7 +3,7 @@
 
 e_command	identifyCommand(char* buffer, int bufferIndex, int* parsingIndex)
 {
-	char command[MAX_CMD_LEN + 1];
+    char command[MAX_CMD_LEN + 1];
 	bzeroStr(command, MAX_CMD_LEN);
 	while (*parsingIndex < bufferIndex
 			&& buffer[*parsingIndex] != ' '
@@ -24,6 +24,8 @@ e_command	identifyCommand(char* buffer, int bufferIndex, int* parsingIndex)
 		return SET_TAG;
 	if (ft_strcmp(command, "FACTORY_RESET") == 0)
 		return FACTORY_RESET;
+    if (ft_strcmp(command, "HEXDUMP") == 0)
+		return HEXDUMP;
 	return UNKNOWN;
 }
 
@@ -52,9 +54,6 @@ void	parseNewNodeId(char* argumentStr, command_content_t* result)
 	}
 
 	result->newId = ft_atou(argumentStr);
-    uart_printstr("New node ID is :");
-    uart_itoa(result->newId);
-    uart_printstr("\r\b");
 }
 
 void	parseNewPriority(char* argumentStr, command_content_t* result)
@@ -68,6 +67,16 @@ void	parseNewPriority(char* argumentStr, command_content_t* result)
 	}
 
 	result->newPriority = ft_atoi(argumentStr);
+}
+
+int ft_strcmp(char* str1, char* str2)
+{
+	while (*str1 && *str2 && *str1 == *str2)
+    {
+        str1++;
+        str2++;
+    }
+    return (*str1 - *str2);
 }
 
 void	identifyArgument(char* buffer, int bufferIndex, int* parsingIndex, command_content_t* result)
@@ -142,7 +151,9 @@ command_content_t	parseCommand(char* buffer, int bufferIndex)
 	// uart_printhex(result.command);
 	// uart_printstr("\r\n");
 
-	if (result.command == STATUS || result.command == FACTORY_RESET)
+	if (result.command == STATUS 
+        || result.command == FACTORY_RESET 
+        || result.command == HEXDUMP)
 		return result;
 
 	// uart_printstr("\r\nArgument should be:");
