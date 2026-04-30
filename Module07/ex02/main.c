@@ -67,9 +67,7 @@
 // the configuration to the next available slot, and successfully retrieves the data from the
 // new location after a reboot.
 
-# define MAGIC_NUMER 0xF0
 
-# define NODE_SIZE sizeof(node_t)
 
 const uint16_t c_slot_address[] = {0, 64, 128, 192};
 
@@ -148,11 +146,11 @@ int	writeNode(node_t* node, e_node_slots nodeSlot)
         {
             EEPROM_write(addr, bytes[i]);
 
-            if (EEPROM_read(addr) != bytes[i])
-            {
-				uart_printstr("Corruption detected.");
-                return (1);
-            }
+            // if (EEPROM_read(addr) != bytes[i])
+            // {
+			// 	uart_printstr("Corruption detected.");
+            //     return (1);
+            // }
         }
     }
 	return (0);
@@ -171,6 +169,8 @@ node_t	updateNode(command_content_t* command, e_node_slots position)
 	else if (command->command == SET_TAG)
 		ft_strlcpy(updatedNode.tag, command->newTag, TAG_SIZE);
 
+	updatedNode.integrityCheck = makeChecksum16(&updatedNode);
+
 	return (updatedNode);
 }
 
@@ -187,8 +187,10 @@ node_t	createNode(command_content_t* command)
 		bzeroStr(newNode.tag, TAG_SIZE);
 		ft_strlcpy(newNode.tag, "Unconfigured", 13);
 	}
+
+	newNode.integrityCheck = makeChecksum16(&newNode);
 	
-	return newNode;
+	return (newNode);
 }
 
 void	modifyNode(command_content_t* command)
@@ -202,6 +204,9 @@ void	modifyNode(command_content_t* command)
 		updatedNode = updateNode(command, nodeSlot);
 
 	int writeStatus = writeNode(&updatedNode, nodeSlot);
+	if (writeStatus == 0)
+		return;
+
 	while (writeStatus != 0 && nodeSlot < NONE)
 	{
 		nodeSlot++;
@@ -221,7 +226,7 @@ void	modifyNode(command_content_t* command)
 	if (writeStatus != 0)
 		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
 	else
-		uart_printstr("Done.")
+		uart_printstr("Done.");
 }
 
 void	printStatus()
@@ -231,6 +236,18 @@ void	printStatus()
 		uart_printstr("Node unconfigured\r\n");
 	else
 		printNode(nodeSlot);
+}
+
+void	eraseMagicNumber()
+{
+	e_node_slots nodeSlot = findNode();
+	if (nodeSlot == NONE)
+		return;
+
+	uint32_t MagicNumberAddr = c_slot_address[nodeSlot];
+	EEPROM_write(MagicNumberAddr, 0xff);
+	if (EEPROM_read(MagicNumberAddr) != 0xff)
+		uart_printstr("Corruption detected.");
 }
 
 
@@ -245,6 +262,12 @@ void	executeCommand(command_content_t* command)
 		}
 		case FACTORY_RESET:
 		{
+			eraseMagicNumber();
+			return;
+		}
+		case HEXDUMP:
+		{
+			hexdumpEEPROMAroundAddress(findNode() == NONE ? c_slot_address[findNode()] : 0);
 			return;
 		}
 		default:
@@ -288,8 +311,8 @@ int main()
 			case VALIDATE_EXECUTE:
 			{
 				command = parseCommand(buffer, bufferIndex);
-				printCommand(&command);
-				uart_printstr("\r\n");
+				// printCommand(&command);
+				// uart_printstr("\r\n");
 				executeCommand(&command);
 				state = PROMPT;
 			}

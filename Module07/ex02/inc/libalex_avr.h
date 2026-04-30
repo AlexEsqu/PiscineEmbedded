@@ -146,6 +146,7 @@ unsigned char EEPROM_read(unsigned int uiAddress);
 void		EEPROM_write(unsigned int uiAddress, unsigned char ucData);
 void		hexdumpEEPROM();
 void		hexdumpEEPROMWithModif(eeprom_balaylaka_t result);
+void	hexdumpEEPROMAroundAddress(uint16_t addr);
 
 // PROMPT
 
@@ -154,6 +155,9 @@ void		hexdumpEEPROMWithModif(eeprom_balaylaka_t result);
 # define MAX_CMD_LEN 14
 # define MAX_ARG_LEN 34
 # define TAG_SIZE 33
+# define MAGIC_NUMER 0x42
+# define NODE_SIZE sizeof(node_t)
+# define NODE_SIZE_WITHOUT_INTEGRITY_CHECK (sizeof(node_t) - sizeof(uint16_t))
 
 typedef enum
 {
@@ -171,6 +175,7 @@ typedef enum
 	SET_PRIO,
 	SET_TAG,
 	FACTORY_RESET,
+	HEXDUMP,
 	UNKNOWN
 }	e_command;
 
@@ -188,7 +193,7 @@ typedef struct
 	uint16_t	magicNumber;
 	uint32_t	nodeId;
 	uint16_t	priority;
-	char		tag[33];
+	char		tag[TAG_SIZE];
 	uint16_t	integrityCheck;
 } node_t;
 
@@ -205,6 +210,7 @@ void	*ft_memset(void *ptr, int value, unsigned long len);
 int	ft_strlcpy(char *dest, const char *src, int size);
 void	printCommand(command_content_t* command);
 command_content_t	parseCommand(char* buffer, int bufferIndex);
-
+int	verifyChecksum16(node_t *node);
+uint16_t	makeChecksum16(node_t *node);
 
 #endif

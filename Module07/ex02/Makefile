@@ -9,6 +9,7 @@ SRC = 	main.c \
 		eeprom.c \
 		prompt.c \
 		parse.c \
+		integrity.c \
 		rgb.c
 
 INC_DIR = inc

@@ -162,6 +162,50 @@ void	hexdumpEEPROMWithModif(eeprom_balaylaka_t result)
 }
 
 
+void	hexdumpEEPROMAroundAddress(uint16_t addr)
+{
+	long sixteenLinesBeforeModif = addr - (16 * 6);
+	if (sixteenLinesBeforeModif < 0)
+		sixteenLinesBeforeModif = 0;
+
+	uint32_t sixteenLinesAfterModif = addr + (16 * 6);
+	if (sixteenLinesAfterModif > EEPROM_SIZE)
+		sixteenLinesBeforeModif = EEPROM_SIZE;
+
+	for (unsigned int address = sixteenLinesBeforeModif; address <  sixteenLinesAfterModif; address += 16)
+	// for (unsigned int address = 0; address < EEPROM_SIZE; address += 16)
+	{
+		printAddr(address);
+		uart_printstr(": ");
+		char buffer[16];
+
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			unsigned int byte = address + i;
+
+			if (byte == addr)
+				uart_printstr("\e[31m");
+
+			buffer[i] = EEPROM_read(byte);
+			printByte(buffer[i]);
+
+			if (byte == addr)
+				uart_printstr("\e[0m");
+
+			uart_tx(' ');
+		}
+
+		uart_printstr("|");
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			uart_tx(buffer[i]);
+		}
+		uart_printstr("|");
+
+		uart_printstr("\r\n");
+	}
+}
+
 
 uint32_t atoiHex(const char *str)
 {
