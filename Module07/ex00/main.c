@@ -46,6 +46,14 @@ void printAddr(uint32_t num)
     }
 }
 
+
+int	ft_isprint(int c)
+{
+	if (c >= ' ' && c <= '~')
+		return (16384);
+	return (0);
+}
+
 void printByte(unsigned char c)
 {
     const char hex[] = "0123456789abcdef";
@@ -59,7 +67,7 @@ void printByte(unsigned char c)
         return;
     }
 
-	if (c < 8)
+	if (c < 16)
 		uart_tx('0');
 
     while (c > 0 && i < sizeof(buf))
@@ -94,7 +102,10 @@ int main()
 		uart_printstr("|");
 		for (unsigned int i = 0; i < 16; i++)
 		{
-			uart_tx(buffer[i]);
+			if (ft_isprint(buffer[i]))
+				uart_tx(buffer[i]);
+			else
+				uart_tx('.');
 		}
 		uart_printstr("|");
         	

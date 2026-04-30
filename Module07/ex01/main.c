@@ -17,9 +17,6 @@ typedef enum
 	UPDATED_HEXDUMP
 } e_state;
 
-
-
-
 void	bzeroStr(char *str, int size)
 {
 	for (int i = 0; i < size; i++)
