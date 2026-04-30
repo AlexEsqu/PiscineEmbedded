@@ -70,7 +70,7 @@
 
 const uint16_t c_slot_address[] = {0, 64, 128, 192};
 
-uint8_t bug_tester = 1;
+uint8_t bug_tester = 3;
 
 typedef enum
 {
@@ -78,39 +78,39 @@ typedef enum
 	NODE_SLOT_1,
 	NODE_SLOT_2,
 	NODE_SLOT_3,
-	NONE 
+	NONE
 } e_node_slots;
 
 
 
 node_t	readNode(e_node_slots nodeSlot)
 {
-    node_t	node;
-    uint8_t	*bytes = (uint8_t *)&node;
+	node_t	node;
+	uint8_t	*bytes = (uint8_t *)&node;
 
-    for (uint8_t i = 0; i < NODE_SIZE; i++)
-    {
-        bytes[i] = EEPROM_read(c_slot_address[nodeSlot] + i);
-    }
-    return (node);
+	for (uint8_t i = 0; i < NODE_SIZE; i++)
+	{
+		bytes[i] = EEPROM_read(c_slot_address[nodeSlot] + i);
+	}
+	return (node);
 }
 
 e_node_slots	findNode()
 {
 	for (e_node_slots slot = NODE_SLOT_0; slot < NONE; slot++)
-    {
-        node_t potential_node = readNode(slot);
+	{
+		node_t potential_node = readNode(slot);
 
-        if (potential_node.magicNumber == MAGIC_NUMER && verifyChecksum16(&potential_node) == 0)
-            return slot;
-    }
-    return NONE; 
+		if (potential_node.magicNumber == MAGIC_NUMER && verifyChecksum16(&potential_node))
+			return slot;
+	}
+	return NONE;
 }
 
 
 void	printNode(e_node_slots nodeSlot)
 {
-	node_t node = readNode(nodeSlot);	
+	node_t node = readNode(nodeSlot);
 
 	uart_printstr("Node ID: ");
 	uart_itoa(node.nodeId);
@@ -133,22 +133,30 @@ int	writeNode(node_t* node, e_node_slots nodeSlot)
 {
 	uint8_t* bytes = (uint8_t *)node;
 
-    for (uint8_t i = 0; i < NODE_SIZE; i++)
-    {
-        uint16_t addr = c_slot_address[nodeSlot] + i;
+	for (uint8_t i = 0; i < NODE_SIZE; i++)
+	{
+		uint16_t addr = c_slot_address[nodeSlot] + i;
 
-        if (EEPROM_read(addr) != bytes[i])
-        {
-            EEPROM_write(addr, bytes[i]);
+		if (EEPROM_read(addr) != bytes[i])
+		{
+			EEPROM_write(addr, bytes[i]);
 
-            if (EEPROM_read(addr) != bytes[i] || bug_tester)
-            {
+			if (EEPROM_read(addr) != bytes[i] || bug_tester)
+			{
 				bug_tester--;
-                return (1);
-            }
-        }
-    }
+				return (1);
+			}
+		}
+	}
 	return (0);
+}
+
+void	eraseMagicNumber(e_node_slots nodeSlot)
+{
+	uint32_t MagicNumberAddr = c_slot_address[nodeSlot];
+	EEPROM_write(MagicNumberAddr, 0xff);
+	if (EEPROM_read(MagicNumberAddr) != 0xff)
+		uart_printstr("Corruption detected.");
 }
 
 node_t	updateNode(command_content_t* command, e_node_slots position)
@@ -184,14 +192,42 @@ node_t	createNode(command_content_t* command)
 	}
 
 	newNode.integrityCheck = makeChecksum16(&newNode);
-	
+
 	return (newNode);
+}
+
+void	relocateNode(e_node_slots nodeSlot, node_t* node)
+{
+	int writeStatus = 1;
+	uart_printstr("Corruption detected.\r\n");
+	while (writeStatus != 0 && nodeSlot < NONE)
+	{
+		eraseMagicNumber(nodeSlot);
+
+		nodeSlot++;
+
+		uart_printstr("Relocating config to slot");
+		uart_itoa(nodeSlot);
+		uart_printstr("... ");
+
+		writeStatus = writeNode(node, nodeSlot);
+
+		if (writeStatus != 0)
+			uart_printstr("Fail\r\n");
+		else
+			uart_printstr("Success\r\n");
+	}
+
+	if (writeStatus != 0)
+		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
+	else
+		uart_printstr("Done.\r\n");
 }
 
 void	modifyNode(command_content_t* command)
 {
-	node_t updatedNode; 
-	
+	node_t updatedNode;
+
 	e_node_slots nodeSlot = findNode();
 	if (nodeSlot == NONE)
 	{
@@ -205,27 +241,7 @@ void	modifyNode(command_content_t* command)
 	if (writeStatus == 0)
 		return;
 
-	uart_printstr("Corruption detected.\r\n");
-	while (writeStatus != 0 && nodeSlot < NONE)
-	{
-		nodeSlot++;
-		
-		uart_printstr("Relocating config to slot");
-		uart_itoa(nodeSlot);
-		uart_printstr("... ");
-
-		writeStatus = writeNode(&updatedNode, nodeSlot);
-		
-		if (writeStatus != 0)
-			uart_printstr("Fail\r\n");
-		else
-			uart_printstr("Success\r\n");
-	}
-
-	if (writeStatus != 0)
-		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
-	else
-		uart_printstr("Done.\r\n");
+	relocateNode(nodeSlot, &updatedNode);
 }
 
 void	printStatus()
@@ -237,16 +253,12 @@ void	printStatus()
 		printNode(nodeSlot);
 }
 
-void	eraseMagicNumber()
+void	eraseAllNodes()
 {
-	e_node_slots nodeSlot = findNode();
-	if (nodeSlot == NONE)
-		return;
-
-	uint32_t MagicNumberAddr = c_slot_address[nodeSlot];
-	EEPROM_write(MagicNumberAddr, 0xff);
-	if (EEPROM_read(MagicNumberAddr) != 0xff)
-		uart_printstr("Corruption detected.");
+	for (uint8_t nodeSlot = NODE_SLOT_0; nodeSlot < NONE; nodeSlot++)
+	{
+		eraseMagicNumber(nodeSlot);
+	}
 }
 
 
@@ -263,7 +275,7 @@ void	executeCommand(command_content_t* command)
 		}
 		case FACTORY_RESET:
 		{
-			eraseMagicNumber();
+			eraseAllNodes();
 			return;
 		}
 		case HEXDUMP:
