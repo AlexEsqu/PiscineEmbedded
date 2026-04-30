@@ -155,7 +155,7 @@ void	hexdumpEEPROMAroundAddress(uint16_t addr);
 # define MAX_CMD_LEN 14
 # define MAX_ARG_LEN 34
 # define TAG_SIZE 33
-# define MAGIC_NUMER 0x42
+# define MAGIC_NUMER 0x42424242
 # define NODE_SIZE sizeof(node_t)
 # define NODE_SIZE_WITHOUT_INTEGRITY_CHECK (sizeof(node_t) - sizeof(uint16_t))
 
@@ -190,7 +190,7 @@ typedef struct
 
 typedef struct
 {
-	uint16_t	magicNumber;
+	uint32_t	magicNumber;
 	uint32_t	nodeId;
 	uint16_t	priority;
 	char		tag[TAG_SIZE];

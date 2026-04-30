@@ -90,6 +90,13 @@ void printByte(unsigned char c)
 	}
 }
 
+int	ft_isprint(int c)
+{
+	if (c >= ' ' && c <= '~')
+		return (16384);
+	return (0);
+}
+
 void	hexdumpEEPROM()
 {
 	for (unsigned int address = 0; address < EEPROM_SIZE; address += 16)
@@ -108,7 +115,10 @@ void	hexdumpEEPROM()
 		uart_printstr("|");
 		for (unsigned int i = 0; i < 16; i++)
 		{
-			uart_tx(buffer[i]);
+			if (ft_isprint(buffer[i]))
+				uart_tx(buffer[i]);
+			else
+				uart_tx('.');
 		}
 		uart_printstr("|");
 
@@ -153,7 +163,10 @@ void	hexdumpEEPROMWithModif(eeprom_balaylaka_t result)
 		uart_printstr("|");
 		for (unsigned int i = 0; i < 16; i++)
 		{
-			uart_tx(buffer[i]);
+			if (ft_isprint(buffer[i]))
+				uart_tx(buffer[i]);
+			else
+				uart_tx('.');
 		}
 		uart_printstr("|");
 
@@ -197,7 +210,10 @@ void	hexdumpEEPROMAroundAddress(uint16_t addr)
 		uart_printstr("|");
 		for (unsigned int i = 0; i < 16; i++)
 		{
-			uart_tx(buffer[i]);
+			if (ft_isprint(buffer[i]))
+				uart_tx(buffer[i]);
+			else
+				uart_tx('.');
 		}
 		uart_printstr("|");
 

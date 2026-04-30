@@ -219,7 +219,7 @@ void	relocateNode(e_node_slots nodeSlot, node_t* node, e_state* state)
 	if (writeStatus != 0)
 	{
 		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
-		state = CORRUPTED;
+		*state = CORRUPTED;
 	}
 	else
 		uart_printstr("Done.\r\n");
@@ -242,7 +242,7 @@ void	modifyNode(command_content_t* command, e_state* state)
 	if (writeStatus == 0)
 		return;
 
-	relocateNode(nodeSlot, &updatedNode, &state);
+	relocateNode(nodeSlot, &updatedNode, state);
 }
 
 void	printStatus()
@@ -286,7 +286,7 @@ void	executeCommand(command_content_t* command, e_state* state)
 		}
 		default:
 		{
-			modifyNode(command, &state);
+			modifyNode(command, state);
 		}
 	}
 }
