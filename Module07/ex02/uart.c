@@ -37,7 +37,7 @@ void uart_init()
 // UCSR0C - USART Control and Status Register n C
 // 	UMSEL01		UMSEL00		UPM01		UPM00		USBS0		UCSZ01		UCSZ00		UCPOL0
 //	0			0			0			0			0			1			1			0
-//	[set sync/async mode  ]	[ set parity mode     ]	[ stopbit ]	[set bits/frames      ]	[clock pol	]
+//	[set sync/async mode  ]	[ set parity mode	 ]	[ stopbit ]	[set bits/frames	  ]	[clock pol	]
 
 // UBRR0H - USART Baud Rate Register High
 // 	-			-			-			-			UBRRn		UBRRn		UBRRn		UBRRn
@@ -74,105 +74,101 @@ void uart_tx(char c)
 
 void uart_printstr(const char* str)
 {
-    while (*str)
-    {
-        uart_tx(*str++);
-    }
+	while (*str)
+	{
+		uart_tx(*str++);
+	}
 }
 
 
 void uart_printhex(long num)
 {
-    const char hex[] = "0123456789abcdef";
-    char buf[8];
-    long i = 0;
+	const char hex[] = "0123456789abcdef";
+	char buf[8];
+	long i = 0;
 
-    if (num == 0)
-    {
-        uart_tx('0');
-        return;
-    }
+	if (num == 0)
+	{
+		uart_tx('0');
+		return;
+	}
 
-    if (num < 0)
-    {
-        while (num < 0 && i < sizeof(buf))
-        {
-            buf[i++] = hex[num % 16];
-            num /= 16;
-        }
-    }
-    else
-    {
-        while (num > 0 && i < sizeof(buf))
-        {
-            buf[i++] = hex[num % 16];
-            num /= 16;
-        }
-    }
+	if (num < 0)
+	{
+		while (num < 0 && i < sizeof(buf))
+		{
+			buf[i++] = hex[num % 16];
+			num /= 16;
+		}
+	}
+	else
+	{
+		while (num > 0 && i < sizeof(buf))
+		{
+			buf[i++] = hex[num % 16];
+			num /= 16;
+		}
+	}
 
-    while (i > 0)
-    {
-        uart_tx(buf[--i]);
-    }
+	while (i > 0)
+	{
+		uart_tx(buf[--i]);
+	}
 }
 
 void uart_itoa(long num)
 {
-    const char dec[] = "0123456789";
-    char buf[12];
-    uint32_t i = 0;
+	char buf[12];
+	uint32_t i = 0;
+	unsigned long value;
 
-    if (num == 0)
-    {
-        uart_tx('0');
-        return;
-    }
-    if (num < 0)
-    {
-        uart_tx('-');
+	if (num < 0)
+	{
+		uart_tx('-');
+		value = (unsigned long)(-(num + 1)) + 1;
+	}
+	else
+	{
+		value = (unsigned long)num;
+	}
 
-        while (num < 0 && i < sizeof(buf))
-        {
-            buf[i++] = dec[num % 10];
-            num /= 10;
-        }
-    }
-    else
-    {
-        while (num > 0 && i < sizeof(buf))
-        {
-            buf[i++] = dec[num % 10];
-            num /= 10;
-        }
-    }
+	if (value == 0)
+	{
+		uart_tx('0');
+		return;
+	}
 
-    while (i > 0)
-    {
-        uart_tx(buf[--i]);
-    }
+	while (value > 0 && i < sizeof(buf))
+	{
+		buf[i++] = "0123456789"[value % 10];
+		value /= 10;
+	}
+
+	while (i > 0)
+		uart_tx(buf[--i]);
 }
 
 
 void uart_utoa(uint32_t num)
 {
-    const char dec[] = "0123456789";
-    char buf[10];
-    uint32_t i = 0;
+	const char dec[] = "0123456789";
+	char buf[10];
+	uint32_t i = 0;
 
-    if (num == 0)
-    {
-        uart_tx('0');
-        return;
-    }
+	if (num == 0)
+	{
+		uart_tx('0');
+		return;
+	}
 
-    while (num > 0 && i < sizeof(buf))
-    {
-        buf[i++] = dec[num % 10];
-        num /= 10;
-    }
+	while (num > 0 && i < sizeof(buf))
+	{
+		buf[i++] = dec[num % 10];
+		num /= 10;
+	}
 
-    while (i > 0)
-    {
-        uart_tx(buf[--i]);
-    }
+	while (i > 0)
+	{
+		uart_tx(buf[--i]);
+	}
 }

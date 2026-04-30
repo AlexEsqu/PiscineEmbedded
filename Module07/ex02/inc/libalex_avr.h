@@ -192,7 +192,7 @@ typedef struct
 {
 	uint32_t	magicNumber;
 	uint32_t	nodeId;
-	uint16_t	priority;
+	int			priority;
 	char		tag[TAG_SIZE];
 	uint16_t	integrityCheck;
 } node_t;
