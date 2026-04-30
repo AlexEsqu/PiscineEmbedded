@@ -84,11 +84,6 @@ char bufferHasSpace(int bufferIndex)
 
 int ft_strcmp(char* str1, char* str2)
 {
-	uart_printstr("\r\n");
-	uart_printstr(str1);
-	uart_printstr(" vs ");
-	uart_printstr(str2);
-	uart_printstr("\r\n");
 
 	while (*str1 && *str1++ == *str2++)
 		;
@@ -169,7 +164,6 @@ char	isValidFormat(char* buffer)
 
 	return 1;
 }
-
 
 void handleUserTyping(char* buffer, int* bufferIndex, e_state* state)
 {

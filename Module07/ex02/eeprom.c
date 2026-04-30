@@ -220,3 +220,23 @@ eeprom_balaylaka_t	extractAddressAndNewValue(char* buffer)
 	result.newValue = atoiHex(newByte);
 	return result;
 }
+
+
+
+
+// EEARH =  EEPROM Address Register High
+// 	–			–			–			–			–			–			EEAR9		EEAR8
+// [																	]	[EEPROM address			]
+
+// EEARH =  EEPROM Address Register Low
+//	EEAR7		EEAR6		EEAR5		EEAR4		EEAR3		EEAR2		EEAR1		EEAR0
+// [	EEPROM address																				]
+
+// EEDR – The EEPROM Data Register
+// MSB			-			-			-			-			-			-			LSB
+// [	Data to be written / Data read out															]
+
+
+// EECR – The EEPROM Control Registe
+// –			–			EEPM1		EEPM0		EERIE		EEMPE		EEPE		EERE
+// [					  ]	[Programming Mode	  ]	[Interrupt]	[MasterWri]	[WriteEnab]	[ReadEnabl]

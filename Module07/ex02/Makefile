@@ -8,6 +8,7 @@ SRC = 	main.c \
 		i2c.c \
 		eeprom.c \
 		prompt.c \
+		parse.c \
 		rgb.c
 
 INC_DIR = inc

@@ -159,7 +159,9 @@ typedef enum
 {
 	PROMPT,
 	RECEIVE_COMMAND,
-	VALIDATE_EXECUTE
+	VALIDATE_EXECUTE,
+	RELOCATE,
+	CORRUPTED
 } e_state;
 
 typedef enum
@@ -183,7 +185,7 @@ typedef struct
 
 typedef struct
 {
-	uint32_t	magicNumber;
+	uint16_t	magicNumber;
 	uint32_t	nodeId;
 	uint16_t	priority;
 	char		tag[33];
@@ -201,6 +203,8 @@ uint32_t	ft_atou(const char *str);
 int			ft_atoi(const char *str);
 void	*ft_memset(void *ptr, int value, unsigned long len);
 int	ft_strlcpy(char *dest, const char *src, int size);
+void	printCommand(command_content_t* command);
+command_content_t	parseCommand(char* buffer, int bufferIndex);
 
 
 #endif

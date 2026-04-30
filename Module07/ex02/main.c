@@ -69,167 +69,191 @@
 
 # define MAGIC_NUMER 0xF0
 
-e_command	identifyCommand(char* buffer, int bufferIndex, int* parsingIndex)
-{
-	char command[MAX_CMD_LEN + 1];
-	bzeroStr(command, MAX_CMD_LEN);
-	while (*parsingIndex < bufferIndex
-			&& buffer[*parsingIndex] != ' '
-			&& *parsingIndex < MAX_CMD_LEN)
-	{
-		command[*parsingIndex] = buffer[*parsingIndex];
-		(*parsingIndex)++;
-	}
-	command[*parsingIndex] = '\0';
+# define NODE_SIZE sizeof(node_t)
 
-	if (ft_strcmp(command, "STATUS") == 0)
-		return STATUS;
-	if (ft_strcmp(command, "SET_ID") == 0)
-		return SET_ID;
-	if (ft_strcmp(command, "SET_PRIO") == 0)
-		return SET_PRIO;
-	if (ft_strcmp(command, "SET_TAG") == 0)
-		return SET_TAG;
-	if (ft_strcmp(command, "FACTORY_RESET") == 0)
-		return FACTORY_RESET;
-	return UNKNOWN;
+const uint16_t c_slot_address[] = {0, 64, 128, 192};
+
+typedef enum
+{
+	NODE_SLOT_0,
+	NODE_SLOT_1,
+	NODE_SLOT_2,
+	NODE_SLOT_3,
+	NONE 
+} e_node_slots;
+
+
+e_node_slots	findNode()
+{
+	if (EEPROM_read(c_slot_address[NODE_SLOT_0]) == MAGIC_NUMER)
+		return NODE_SLOT_0;
+	if (EEPROM_read(c_slot_address[NODE_SLOT_1]) == MAGIC_NUMER)
+		return NODE_SLOT_1;
+	if (EEPROM_read(c_slot_address[NODE_SLOT_2]) == MAGIC_NUMER)
+		return NODE_SLOT_2;
+	if (EEPROM_read(c_slot_address[NODE_SLOT_3]) == MAGIC_NUMER)
+		return NODE_SLOT_3;
+	return NONE;
 }
 
-void	parseNewTag(char* argumentStr, command_content_t* result)
+node_t	readNode(e_node_slots nodeSlot)
 {
-	uint16_t len = ft_strlen(argumentStr);
+    node_t	node;
+    uint8_t	*bytes = (uint8_t *)&node;
 
-	if (argumentStr[0] != '\"' || argumentStr[len - 2] != '\"')
-	{
-		uart_printstr("Tag argument is invalid\r\b");
-		result->command = UNKNOWN;
-		return;
-	}
-
-	ft_strlcpy(result->newTag, &argumentStr[1], len - 2);
+    for (uint8_t i = 0; i < NODE_SIZE; i++)
+    {
+        bytes[i] = EEPROM_read(c_slot_address[nodeSlot] + i);
+    }
+    return (node);
 }
 
-void	parseNewNodeId(char* argumentStr, command_content_t* result)
+void	printNode(e_node_slots nodeSlot)
 {
-	// vaguely guard against overflow
-	if (ft_strlen(argumentStr) > 10)
-	{
-		uart_printstr("Node ID argument is invalid\r\b");
-		result->command = UNKNOWN;
-		return;
-	}
+	node_t node = readNode(nodeSlot);	
 
-	result->newId = ft_atou(argumentStr);
+	uart_printstr("Node ID: ");
+	uart_itoa(node.nodeId);
+	uart_printstr("\r\n");
+
+	uart_printstr("Priority: ");
+	uart_itoa(node.priority);
+	uart_printstr("\r\n");
+
+	uart_printstr("Slot: ");
+	if (nodeSlot == NODE_SLOT_0)
+		uart_tx('1');
+	if (nodeSlot == NODE_SLOT_1)
+		uart_tx('2');
+	if (nodeSlot == NODE_SLOT_2)
+		uart_tx('3');
+	if (nodeSlot == NODE_SLOT_3)
+		uart_tx('4');
+	uart_printstr("\r\n");
+
+	uart_printstr("Tag: ");
+	uart_printstr(node.tag);
+	uart_printstr("\r\n");
 }
 
-void	parseNewPriority(char* argumentStr, command_content_t* result)
+int	writeNode(node_t* node, e_node_slots nodeSlot)
 {
-	// vaguely guard against overflow
-	if (ft_strlen(argumentStr) > 5)
-	{
-		uart_printstr("Priority argument is invalid\r\b");
-		result->command = UNKNOWN;
-		return;
-	}
+	uint8_t* bytes = (uint8_t *)node;
 
-	result->newPriority = ft_atoi(argumentStr);
+    for (uint8_t i = 0; i < NODE_SIZE; i++)
+    {
+        uint16_t addr = c_slot_address[nodeSlot] + i;
+
+        if (EEPROM_read(addr) != bytes[i])
+        {
+            EEPROM_write(addr, bytes[i]);
+
+            if (EEPROM_read(addr) != bytes[i])
+            {
+				uart_printstr("Corruption detected.");
+                return (1);
+            }
+        }
+    }
+	return (0);
 }
 
-void	identifyArgument(char* buffer, int bufferIndex, int* parsingIndex, command_content_t* result)
+node_t	updateNode(command_content_t* command, e_node_slots position)
 {
-	uart_printstr("\r\nArgument:[");
-	uart_printstr(&buffer[*parsingIndex]);
-	uart_printstr("]\r\n");
-	(*parsingIndex)++;
+	node_t	updatedNode = readNode(position);
 
-	if (bufferIndex - *parsingIndex > MAX_ARG_LEN)
+	if (command->command == SET_ID)
+		updatedNode.nodeId = command->newId;
+
+	else if (command->command == SET_PRIO)
+		updatedNode.priority = command->newPriority;
+
+	else if (command->command == SET_TAG)
+		ft_strlcpy(updatedNode.tag, command->newTag, TAG_SIZE);
+
+	return (updatedNode);
+}
+
+node_t	createNode(command_content_t* command)
+{
+	node_t	newNode;
+	newNode.magicNumber = MAGIC_NUMER;
+	newNode.nodeId = command->command == SET_ID ? command->newId : 0;
+	newNode.priority = command->command == SET_PRIO ? command->newPriority : 0;
+	if (command->command == SET_TAG)
+		ft_strlcpy(newNode.tag, command->newTag, TAG_SIZE);
+	else
 	{
-		result->command = UNKNOWN;
-		return;
+		bzeroStr(newNode.tag, TAG_SIZE);
+		ft_strlcpy(newNode.tag, "Unconfigured", 13);
+	}
+	
+	return newNode;
+}
+
+void	modifyNode(command_content_t* command)
+{
+	node_t updatedNode; 
+	
+	e_node_slots nodeSlot = findNode();
+	if (nodeSlot == NONE)
+		updatedNode = createNode(command);
+	else
+		updatedNode = updateNode(command, nodeSlot);
+
+	int writeStatus = writeNode(&updatedNode, nodeSlot);
+	while (writeStatus != 0 && nodeSlot < NONE)
+	{
+		nodeSlot++;
+		
+		uart_printstr("Relocating config to slot");
+		uart_itoa(nodeSlot);
+		uart_printstr("... ");
+
+		writeStatus = writeNode(&updatedNode, nodeSlot);
+		
+		if (writeStatus != 0)
+			uart_printstr("Fail\r\n");
+		else
+			uart_printstr("Success\r\n");
 	}
 
-	char argument[MAX_ARG_LEN + 1];
-	bzeroStr(argument, MAX_ARG_LEN);
-	int argIndex = 0;
-	while (*parsingIndex <= bufferIndex)
-	{
-		argument[argIndex] = buffer[*parsingIndex];
-		uart_tx(argument[argIndex]);
-		uart_printstr("\r\n");
-		argIndex++;
-		(*parsingIndex)++;
-	}
-	argument[argIndex] = '\0';
+	if (writeStatus != 0)
+		uart_printstr("CRITICAL EEPROM FAILURE\r\n");
+	else
+		uart_printstr("Done.")
+}
 
-	uart_printstr("Argument extracted as: [");
-	uart_printstr(argument);
-	uart_printstr("]\r\n");
+void	printStatus()
+{
+	e_node_slots nodeSlot = findNode();
+	if (nodeSlot == NONE)
+		uart_printstr("Node unconfigured\r\n");
+	else
+		printNode(nodeSlot);
+}
 
-	switch (result->command)
+
+void	executeCommand(command_content_t* command)
+{
+	switch (command->command)
 	{
-		case SET_ID:
+		case STATUS:
 		{
-			parseNewNodeId(argument, result);
+			printStatus();
 			return;
 		}
-		case SET_TAG:
+		case FACTORY_RESET:
 		{
-			parseNewTag(argument, result);
-			return;
-		}
-		case SET_PRIO:
-		{
-			parseNewPriority(argument, result);
 			return;
 		}
 		default:
-			return;
+		{
+			modifyNode(command);
+		}
 	}
 }
 
-void	clearCommand(command_content_t* command)
-{
-	command->command = UNKNOWN;
-	command->newId = 0;
-	command->newPriority = 0;
-	bzeroStr(command->newTag, TAG_SIZE);
-}
-
-command_content_t	parseCommand(char* buffer, int bufferIndex)
-{
-	command_content_t	result;
-	clearCommand(&result);
-	int parsingIndex = 0;
-
-	result.command = identifyCommand(buffer, bufferIndex, &parsingIndex);
-
-	uart_printstr("Command id as: ");
-	uart_printhex(result.command);
-	uart_printstr("\r\n");
-
-	if (result.command == STATUS || result.command == FACTORY_RESET)
-		return result;
-
-	uart_printstr("\r\nArgument should be:");
-	uart_printstr(&buffer[parsingIndex]);
-	identifyArgument(buffer, bufferIndex, &parsingIndex, &result);
-
-	return result;
-}
-
-
-void	printCommand(command_content_t* command)
-{
-	uart_printstr("\r\nCommand is: ");
-	uart_itoa(command->command);
-	uart_printstr("\r\nNew Tag is: ");
-	uart_printstr(command->newTag);
-	uart_printstr("\r\nNew ID is: ");
-	uart_itoa(command->newId);
-	uart_printstr("\r\nNew Priority is: ");
-	uart_itoa(command->newPriority);
-	uart_printstr("\r\n");
-}
 
 int main()
 {
@@ -266,29 +290,16 @@ int main()
 				command = parseCommand(buffer, bufferIndex);
 				printCommand(&command);
 				uart_printstr("\r\n");
+				executeCommand(&command);
 				state = PROMPT;
 			}
-
+			default:
+			{
+				break;
+			}
 		}
 
 	}
 }
 
 
-
-// EEARH =  EEPROM Address Register High
-// 	–			–			–			–			–			–			EEAR9		EEAR8
-// [																	]	[EEPROM address			]
-
-// EEARH =  EEPROM Address Register Low
-//	EEAR7		EEAR6		EEAR5		EEAR4		EEAR3		EEAR2		EEAR1		EEAR0
-// [	EEPROM address																				]
-
-// EEDR – The EEPROM Data Register
-// MSB			-			-			-			-			-			-			LSB
-// [	Data to be written / Data read out															]
-
-
-// EECR – The EEPROM Control Registe
-// –			–			EEPM1		EEPM0		EERIE		EEMPE		EEPE		EERE
-// [					  ]	[Programming Mode	  ]	[Interrupt]	[MasterWri]	[WriteEnab]	[ReadEnabl]
