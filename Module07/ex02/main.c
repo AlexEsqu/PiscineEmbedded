@@ -81,8 +81,6 @@ typedef enum
 	NONE
 } e_node_slots;
 
-
-
 node_t	readNode(e_node_slots nodeSlot)
 {
 	node_t	node;
