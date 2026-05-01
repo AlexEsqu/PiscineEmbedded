@@ -266,6 +266,8 @@ void	printStatus()
 
 void	eraseAllNodes()
 {
+	corruption_detected = 0;
+	bug_tester = 0;
 	for (uint8_t nodeSlot = NODE_SLOT_0; nodeSlot < NONE; nodeSlot++)
 	{
 		eraseMagicNumber(nodeSlot);
@@ -287,7 +289,6 @@ void	executeCommand(command_content_t* command)
 		case FACTORY_RESET:
 		{
 			eraseAllNodes();
-			corruption_detected = 0;
 			return;
 		}
 		case HEXDUMP:
