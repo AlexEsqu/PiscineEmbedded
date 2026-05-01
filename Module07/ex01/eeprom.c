@@ -130,15 +130,15 @@ void	hexdumpEEPROM()
 
 void	hexdumpEEPROMWithModif(eeprom_balaylaka_t result)
 {
-	long sixteenLinesBeforeModif = result.byteAddress - (16 * 6);
-	if (sixteenLinesBeforeModif < 0)
-		sixteenLinesBeforeModif = 0;
+	long start = (result.byteAddress - 16 * 16) & ~0xF;
+	if (start < 0)
+		start = 0;
 
-	uint32_t sixteenLinesAfterModif = result.byteAddress + (16 * 6);
-	if (sixteenLinesAfterModif > EEPROM_SIZE)
-		sixteenLinesBeforeModif = EEPROM_SIZE;
+	uint32_t end = (result.byteAddress + 16 * 16) & ~0xF;
+	if (end > EEPROM_SIZE)
+		end = EEPROM_SIZE;
 
-	for (unsigned int address = sixteenLinesBeforeModif; address <  sixteenLinesAfterModif; address += 16)
+	for (unsigned int address = start; address < end; address += 16)
 	// for (unsigned int address = 0; address < EEPROM_SIZE; address += 16)
 	{
 		printAddr(address);

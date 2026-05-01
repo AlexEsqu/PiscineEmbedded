@@ -70,7 +70,7 @@
 
 const uint16_t c_slot_address[] = {0, 64, 128, 192};
 
-uint8_t bug_tester = 4;
+uint8_t bug_tester = 0;
 uint8_t corruption_detected = 0;
 
 typedef enum
