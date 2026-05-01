@@ -29,18 +29,52 @@ e_command	identifyCommand(char* buffer, int bufferIndex, int* parsingIndex)
 	return UNKNOWN;
 }
 
-void	parseNewTag(char* argumentStr, command_content_t* result)
+
+int	isAlphaNumDashOrUnderscore(int c)
+{
+	if (c >= '0' && c <= '9')
+		return (1);
+	if (c >= 'a' && c <= 'z')
+		return (1);
+	if (c >= 'A' && c <= 'Z')
+		return (1);
+	if (c == '_' || c == '-')
+		return (1);
+	return (0);
+}
+
+int	isValidTag(char* argumentStr)
 {
 	uint16_t len = ft_strlen(argumentStr);
+	// uart_itoa(len);
+	// uart_printstr("\r\n");
+	if (len > MAX_ARG_LEN + 1)
+		return (0);
 
 	if (argumentStr[0] != '\"' || argumentStr[len - 2] != '\"')
+		return (0);
+
+	for (uint8_t i = 1; argumentStr[i] && i < (len - 2); i++)
 	{
-		uart_printstr("Tag argument is invalid\r\b");
-		result->command = UNKNOWN;
-		return;
+		if (!isAlphaNumDashOrUnderscore(argumentStr[i]))
+			return (0);
 	}
 
-	ft_strlcpy(result->newTag, &argumentStr[1], len - 2);
+	return (1);
+}
+
+void	parseNewTag(char* argumentStr, command_content_t* result)
+{
+	if (isValidTag(argumentStr))
+	{
+		uint16_t len = ft_strlen(argumentStr);
+		ft_strlcpy(result->newTag, &argumentStr[1], len - 2);
+	}
+	else
+	{
+		uart_printstr("Tag argument is invalid\r\n");
+		result->command = UNKNOWN;
+	}
 }
 
 void	parseNewNodeId(char* argumentStr, command_content_t* result)
@@ -48,7 +82,7 @@ void	parseNewNodeId(char* argumentStr, command_content_t* result)
 	// vaguely guard against overflow
 	if (ft_strlen(argumentStr) > 10)
 	{
-		uart_printstr("Node ID argument is invalid\r\b");
+		uart_printstr("Node ID argument is invalid\r\n");
 		result->command = UNKNOWN;
 		return;
 	}
@@ -61,7 +95,7 @@ void	parseNewPriority(char* argumentStr, command_content_t* result)
 	// vaguely guard against overflow
 	if (ft_strlen(argumentStr) > 5)
 	{
-		uart_printstr("Priority argument is invalid\r\b");
+		uart_printstr("Priority argument is invalid\r\n");
 		result->command = UNKNOWN;
 		return;
 	}
@@ -99,6 +133,13 @@ void	identifyArgument(char* buffer, int bufferIndex, int* parsingIndex, command_
 	int argIndex = 0;
 	while (*parsingIndex <= bufferIndex)
 	{
+		if (argIndex > MAX_ARG_LEN + 3)
+		{
+			uart_printstr("Argument is too long\r\n");
+			result->command = UNKNOWN;
+			return;
+		}
+
 		argument[argIndex] = buffer[*parsingIndex];
 		argIndex++;
 		(*parsingIndex)++;
@@ -151,8 +192,8 @@ command_content_t	parseCommand(char* buffer, int bufferIndex)
 	// uart_printhex(result.command);
 	// uart_printstr("\r\n");
 
-	if (result.command == STATUS 
-        || result.command == FACTORY_RESET 
+	if (result.command == STATUS
+        || result.command == FACTORY_RESET
         || result.command == HEXDUMP)
 		return result;
 

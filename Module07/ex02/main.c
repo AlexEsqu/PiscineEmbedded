@@ -296,6 +296,10 @@ void	executeCommand(command_content_t* command)
 			hexdumpEEPROM();
 			return;
 		}
+		case UNKNOWN:
+		{
+			return;
+		}
 		default:
 		{
 			modifyNode(command);
@@ -337,6 +341,7 @@ int main()
 			case VALIDATE_EXECUTE:
 			{
 				command = parseCommand(buffer, bufferIndex);
+				// if command is invalid, will be parsed to UNKNOWN and ignored
 				executeCommand(&command);
 				state = PROMPT;
 				break;
