@@ -121,7 +121,8 @@ typedef enum
 {
 	SPI_LED_D6,
 	SPI_LED_D7,
-	SPI_LED_D8
+	SPI_LED_D8,
+	NONE
 } e_spi_led;
 
 void	spi_init();
