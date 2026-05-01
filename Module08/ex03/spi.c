@@ -70,32 +70,28 @@ void	spi_send_turn_off_frame()
 
 void	spi_send_color_frame(uint32_t rgb)
 {
-	spi_write(0xE1);
-	spi_write(get_blue(rgb));
-	spi_write(get_green(rgb));
-	spi_write(get_red(rgb));
+	if (rgb == 0x000000)
+	{
+		spi_send_turn_off_frame();
+	}
+	else
+	{
+		spi_write(0xE1);
+		spi_write(get_blue(rgb));
+		spi_write(get_green(rgb));
+		spi_write(get_red(rgb));
+	}
 }
 
-void	spi_led(e_spi_led led, uint32_t rgb)
+void	spi_led(uint32_t rgbLedD6, uint32_t rgbLedD7, uint32_t rgbLedD8)
 {
 	// Start frame
 	for (int i = 0; i < 4; i++)
 		spi_write(0x00);
 
-	if (led == SPI_LED_D6)
-		spi_send_color_frame(rgb);
-	else
-		spi_send_turn_off_frame();
-
-	if (led == SPI_LED_D7)
-		spi_send_color_frame(rgb);
-	else
-		spi_send_turn_off_frame();
-
-	if (led == SPI_LED_D8)
-		spi_send_color_frame(rgb);
-	else
-		spi_send_turn_off_frame();
+	spi_send_color_frame(rgbLedD6);
+	spi_send_color_frame(rgbLedD7);
+	spi_send_color_frame(rgbLedD8);
 
 	// End frame
 	spi_write(0xFF);

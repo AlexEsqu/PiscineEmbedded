@@ -10,13 +10,12 @@ int main()
 
 	while (1)
 	{
-		for (e_spi_led led = SPI_LED_D6; led < 3; led++)
+		// loops over enum containing D6, D7, D8 and NONE=> 4 x 250ms one second cycles
+		for (e_spi_led led = SPI_LED_D6; led < 4; led++)
 		{
 			spi_led(led, 0x010101);
 			_delay_ms(250);
 		}
-		spi_led(NONE, 0x000000);
-		_delay_ms(250);
 	}
 }
 
