@@ -2,26 +2,17 @@
 
 // Write a program that initializes SPI as master and turns on the LED D6 in red.
 
-// void	setSPIBaudRate()
-// {
-// 	unsigned int ubrr = ( F_CPU / (2 * BAUDRATE) ) - 1;
-
-// 	UBRR0H = (unsigned char)(ubrr >> 8);
-// 	UBRR0L = (unsigned char) ubrr;
-// }
-
-
 // see datasheet p.207-208
 void	spi_init()
 {
 	/* Set MOSI and SCK output, all others input */
-	DDRB = (1<<PB3) | (1<<PB4) | (1 << PB5);
+	DDRB = (1<<PB2) | (1<<PB3) | (1 << PB5);
 
 	PORTB |= (1 << PB2);
 
 	/* Enable SPI, Master, set clock rate fck/16 */
-	SPCR = (1<<SPE)|(1<<MSTR);
-	SPDR |=(1<<SPI2X);
+	SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR0);
+	// SPDR |=(1<<SPI2X);
 }
 
 void	spi_write(uint8_t c)
@@ -31,7 +22,6 @@ void	spi_write(uint8_t c)
 	while(!(SPSR & (1<<SPIF)))
 		;
 }
-
 
 int main()
 {
@@ -50,8 +40,7 @@ int main()
 		spi_write(0xFF);				// Red = 255
 
 		// End frame
-		for (int i = 0; i < 4; i++)
-			spi_write(0xFF);
+		spi_write(0xFF);
 	}
 }
 
