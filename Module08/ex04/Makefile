@@ -1,4 +1,4 @@
-NAME = Imperious_Leader
+NAME = IL_Serious
 
 SRC = 	main.c \
 		uart.c \
@@ -6,6 +6,7 @@ SRC = 	main.c \
 		timer.c \
 		adc.c \
 		spi.c \
+		prompt.c \
 		rgb.c
 
 INC_DIR = inc
