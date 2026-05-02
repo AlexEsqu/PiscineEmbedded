@@ -18,7 +18,7 @@
 // #FULLRAINBOW
 
 
-spi_led_config_t g_ledConfig = {0};
+spi_leds_config_t g_ledConfig = {0};
 
 
 void wheel(uint8_t pos)

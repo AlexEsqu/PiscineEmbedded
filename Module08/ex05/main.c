@@ -9,94 +9,84 @@
 // 		◦ The button SW2 is used to switch from one LED to the next
 
 
-spi_led_config_t g_ledConfig = {0};
+// if globals are allowed, might as well...
+spi_led_config_t	g_ledConfig = {0};
 
-uint8_t hexCharToValue(char c)
+// for easier adc updates, instead of many many if else
+uint8_t*		c_colorMap[3][3] = {
+	{&g_ledConfig.ledD6.red, &g_ledConfig.ledD6.green, &g_ledConfig.ledD6.blue},
+	{&g_ledConfig.ledD7.red, &g_ledConfig.ledD7.green, &g_ledConfig.ledD7.blue},
+	{&g_ledConfig.ledD8.red, &g_ledConfig.ledD8.green, &g_ledConfig.ledD8.blue}
+};
+
+void	OnSw1Press()
 {
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
-	return 0;
-}
-
-uint32_t extractColor(char* buffer)
-{
-	uint8_t r, g, b;
-
-	// Extract hex values from positions 1-2 (R), 3-4 (G), 5-6 (B)
-	r = (hexCharToValue(buffer[1]) << 4) | hexCharToValue(buffer[2]);
-	g = (hexCharToValue(buffer[3]) << 4) | hexCharToValue(buffer[4]);
-	b = (hexCharToValue(buffer[5]) << 4) | hexCharToValue(buffer[6]);
-
-	return getRGB(r, g, b);
-}
-
-void	parseAndExecuteCommand(char* buffer, int* bufferIndex)
-{
-	if (ft_strcmp(buffer, "#FULLRAINBOW") == 0)
-	{
-		g_ledConfig.isRainbow = 1;
-	}
-
-	else if (!isValidCmdFormat(buffer, bufferIndex))
-		uart_printstr("Invalid format, try again.\r\n");
-
+	if (g_ledConfig.currentPrimary == PRIMARY_BLUE)
+		g_ledConfig.currentPrimary = PRIMARY_RED;
 	else
-	{
-		g_ledConfig.isRainbow = 0;
-		uint32_t color = extractColor(buffer);
-		if (buffer[8] == '6')
-			g_ledConfig.colorD6 = color;
-		if (buffer[8] == '7')
-			g_ledConfig.colorD7 = color;
-		if (buffer[8] == '8')
-			g_ledConfig.colorD8 = color;
-	}
+		g_ledConfig.currentPrimary++;
+}
+
+
+void	OnSw2Press()
+{
+	if (g_ledConfig.currentLed == SPI_LED_D8)
+		g_ledConfig.currentLed = SPI_LED_D6;
+	else
+		g_ledConfig.currentLed++;
+	g_ledConfig.currentPrimary = PRIMARY_RED;
+}
+
+
+void	updateLedBasedOnAdcValue()
+{
+	// using c_colorMap to look up which value to update
+	// gathering 10 bits from adc, dropping last two bits since color can only be 8bits
+	*c_colorMap[g_ledConfig.currentLed][g_ledConfig.currentPrimary] = (get_adc0_conv() >> 2);
+}
+
+
+void	spi_send_led_frame(spi_color_t* ledConfig)
+{
+	spi_write(0xE1);
+	spi_write(ledConfig->blue);
+	spi_write(ledConfig->green);
+	spi_write(ledConfig->red);
+}
+
+void	spi_send_config_frames()
+{
+	for (int i = 0; i < 4; i++)
+		spi_write(0x00);
+
+	spi_send_led_frame(&g_ledConfig.ledD6);
+
+	spi_send_led_frame(&g_ledConfig.ledD7);
+
+	spi_send_led_frame(&g_ledConfig.ledD8);
+
+	spi_write(0xFF);
 }
 
 int main()
 {
 	spi_init();
-	uart_init();
+	button_init();
+	adc_init();
 
-	e_state state = PROMPT;
-	char	buffer[BUFFER_SIZE];
-	int	bufferIndex = 0;
+	// Enable interrupt
+	SREG |= (1 << 7);
+
+	// Set timer1 for debouncing the switches
+	timer1_init(TIMER_MODE_CTC,TOP_DEFAULT,CMP_DISCONNECT,CMP_DISCONNECT);
+	timer1_launch(CLK_DIV1024);
+
+	g_ledConfig.currentLed = SPI_LED_D6;
+	g_ledConfig.currentPrimary = PRIMARY_RED;
 
 	while (1)
 	{
-		switch (state)
-		{
-			case PROMPT:
-			{
-				ft_memset(buffer, '\0', BUFFER_SIZE);
-				bufferIndex = 0;
-				uart_printstr("> ");
-				state = AWAIT_COMMAND;
-				break;
-			}
-			case AWAIT_COMMAND:
-			{
-				handleUserTyping(buffer, &bufferIndex, &state);
-				break;
-			}
-			case EXECUTE_COMMAND:
-			{
-				parseAndExecuteCommand(buffer, &bufferIndex);
-				state = PROMPT;
-				break;
-			}
-		}
-		if (g_ledConfig.isRainbow)
-		{
-			wheel(g_ledConfig.rainbowPos++);
-			_delay_ms(20);
-		}
-		spi_send_all_led_frames(g_ledConfig.colorD6, g_ledConfig.colorD7, g_ledConfig.colorD8);
+		updateLedBasedOnAdcValue();
+		spi_send_config_frames();
 	}
 }
-
-

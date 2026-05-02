@@ -34,12 +34,12 @@ typedef enum
 	WHITE		= 0b01101000
 }	e_color;
 
-void	init_rgb();
-void	set_rgb(uint8_t r, uint8_t g, uint8_t b);
-uint8_t get_red(uint32_t color);
-uint8_t get_green(uint32_t color);
-uint8_t get_blue(uint32_t color);
-uint32_t    getRGB(uint8_t r, uint8_t g, uint8_t b);
+void		init_rgb();
+void		set_rgb(uint8_t r, uint8_t g, uint8_t b);
+uint8_t		get_red(uint32_t color);
+uint8_t		get_green(uint32_t color);
+uint8_t		get_blue(uint32_t color);
+uint32_t	getRGB(uint8_t r, uint8_t g, uint8_t b);
 
 // TIMERS
 
@@ -81,32 +81,26 @@ typedef enum {
 } e_compare_mode;
 
 
-void	timer0_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
-void	timer0_launch(e_divider divider);
+void		timer0_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void		timer0_launch(e_divider divider);
 
-void	timer1_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
-void	timer1_launch(e_divider divider);
+void		timer1_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void		timer1_launch(e_divider divider);
 
-void	timer2_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
-void	timer2_launch(e_divider divider);
+void		timer2_init(e_timer_mode mode, e_timer_submode submode, e_compare_mode comA, e_compare_mode comB);
+void		timer2_launch(e_divider divider);
 
-void	delay_ms(int ms);
+void		delay_ms(int ms);
 
 // UART
 
-void	uart_init();
-void	uart_tx(char c);
-char	uart_rx();
-void	uart_printhex(uint32_t c);
-void	uart_printstr(const char* str);
-void	uart_itoa(uint32_t num);
+void		uart_init();
+void		uart_tx(char c);
+char		uart_rx();
+void		uart_printhex(uint32_t c);
+void		uart_printstr(const char* str);
+void		uart_itoa(uint32_t num);
 
-
-// BITSHIFT
-
-void	toggle(uint8_t targetBit, volatile uint8_t* reg);
-void	set(uint8_t targetBit, volatile uint8_t* reg);
-void	clear(uint8_t targetBit, volatile uint8_t* reg);
 
 // ADC
 
@@ -123,28 +117,42 @@ typedef enum
 	SPI_LED_D6,
 	SPI_LED_D7,
 	SPI_LED_D8,
-	NONE
 } e_spi_led;
+
+typedef enum
+{
+	PRIMARY_RED,
+	PRIMARY_GREEN,
+	PRIMARY_BLUE,
+} e_primary;
+
 
 typedef struct
 {
-	uint32_t colorD6;
-	uint32_t colorD7;
-	uint32_t colorD8;
-	uint8_t isRainbow;
-	uint8_t rainbowPos;
+	uint8_t		red;
+	uint8_t		green;
+	uint8_t		blue;
+} spi_color_t;
+
+typedef struct
+{
+	e_spi_led	currentLed;
+	e_primary	currentPrimary;
+
+	spi_color_t	ledD6;
+	spi_color_t	ledD7;
+	spi_color_t	ledD8;
 } spi_led_config_t;
 
 
-void	spi_init();
-void	spi_write(uint8_t c);
-void	spi_send_all_led_frames(uint32_t rgbLedD6, uint32_t rgbLedD7, uint32_t rgbLedD8);
-void	spi_send_one_led_frames(e_spi_led led, uint32_t rgb);
+void		spi_init();
+void		spi_write(uint8_t c);
+void		spi_send_all_led_frames(uint32_t rgbLedD6, uint32_t rgbLedD7, uint32_t rgbLedD8);
+void		spi_send_one_led_frames(e_spi_led led, uint32_t rgb);
 
 // PROMPT
 
 # define BUFFER_SIZE 13
-# define SIZE_OF_COLOR_FORMAT 6
 
 typedef enum
 {
@@ -153,10 +161,18 @@ typedef enum
 	EXECUTE_COMMAND
 } e_state;
 
-void	*ft_memset(void *ptr, int value, unsigned long len);
-int	ft_strcmp(char* str1, char* str2);
-int	isHexDigit(char c);
-void handleUserTyping(char* buffer, int* bufferIndex, e_state* state);
+void*		ft_memset(void *ptr, int value, unsigned long len);
+int			ft_strcmp(char* str1, char* str2);
+int			isHexDigit(char c);
+void 		handleUserTyping(char* buffer, int* bufferIndex, e_state* state);
+
+// BUTTON
+
+#define DEBOUNCE_COUNT 200
+
+void		button_init();
+void		OnSw2Press();
+void		OnSw1Press();
 
 
 

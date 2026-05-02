@@ -133,7 +133,7 @@ typedef struct
 	uint32_t colorD8;
 	uint8_t isRainbow;
 	uint8_t rainbowPos;
-} spi_led_config_t;
+} spi_leds_config_t;
 
 
 void	spi_init();

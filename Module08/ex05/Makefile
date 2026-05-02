@@ -2,7 +2,7 @@ NAME = IL_Serious
 
 SRC = 	main.c \
 		uart.c \
-		bitshift.c \
+		button.c \
 		timer.c \
 		adc.c \
 		spi.c \
