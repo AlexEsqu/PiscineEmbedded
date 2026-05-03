@@ -5,8 +5,14 @@
 // Unfortunately, the D9 LED is not directly connected to the MCU.
 // Now that you’re all grown up, it’s up to you to find a solution!
 
+
+// Ressource : PCA9555 datasheet
+// https://www.nxp.com/docs/en/data-sheet/PCA9555.pdf
+
+// see PCA datasheet p.6
 # define PCA_ADDRESS 0b0100000
 
+// see PCA datasheet p.6
 typedef enum
 {
 	INPUT_PORT_0,
@@ -66,6 +72,7 @@ int main()
 
 		// uart_printhex(getI2cStatusCode());
 
+		// opposite polarity: 0 lights pup, 1 turns off
 		i2c_write(0b11110111);
 
 		// uart_printhex(getI2cStatusCode());

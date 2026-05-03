@@ -1,4 +1,4 @@
-NAME = IL_Serious
+NAME = glimer_hope
 
 SRC = 	main.c \
 		uart.c \

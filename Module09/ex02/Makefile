@@ -1,4 +1,4 @@
-NAME = binary_counter
+NAME = IL_Serious
 
 SRC = 	main.c \
 		uart.c \

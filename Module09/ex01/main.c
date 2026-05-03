@@ -108,9 +108,9 @@ void displayNumber(uint8_t num)
 int main()
 {
 	i2c_init();
-	uart_init();
+	// uart_init();
 
-	// configurating the switch (IO0_0) as input, others are output
+	// configurating the switch (IO0_0 / position 0) as input, others are output
 	pca_write(CONFIGURATION_PORT_0, 0b00000001);
 
 	uint8_t	counter = 0;
@@ -130,12 +130,10 @@ int main()
 
 			while (!(inputPort0 & 1))
 			{
-				inputPort0 = (pca_read(INPUT_PORT_0) & 0b00000001);
+				inputPort0 = (pca_read(INPUT_PORT_0) & VAL_SWITCH_3);
 				delay_ms(50);
 			}
 		}
-
-
 
 		delay_ms(50);
 	}
