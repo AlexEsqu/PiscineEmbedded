@@ -41,7 +41,7 @@ void i2c_init(void)
 	// which reduces to TWBR = ((CPU Clock frequency / SCL frequency) – 16) / 2
 	// source: https://www.arxterra.com/lecture-9-serial-communications-and-i2c/
 	// not my own math that would be madness
-	TWBR = (((float)F_CPU / (float)100000) - 16) / 2;
+	TWBR = (((float)F_CPU / (float)400000) - 16) / 2;
 
 	TWSR = 0;
 	// leaving prescaler at 1 so not changing TWPS1 and TWPS0

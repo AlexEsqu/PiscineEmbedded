@@ -170,15 +170,15 @@ int main()
 	while (1)
 	{
 		pca_write_FAST(OUTPUT_PORT_0, RIGHTMOST_DIGIT, SEG_FOUR);
-		delay_ms(10);
-
-		pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, SEG_TWO);
-		delay_ms(10);
-
-		// pca_write_FAST(OUTPUT_PORT_0, LEFTMID_DIGIT, 0b00000000);
 		delay_ms(2);
 
-		// pca_write_FAST(OUTPUT_PORT_0, (uint8_t)LEFTMOST_DIGIT, 0b00000000);
+		pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, SEG_TWO);
+		delay_ms(2);
+
+		// pca_write_FAST(OUTPUT_PORT_0, LEFTMID_DIGIT, SEG_SIX);
+		delay_ms(2);
+
+		// pca_write_FAST(OUTPUT_PORT_0, (uint8_t)LEFTMOST_DIGIT, SEG_EIGHT);
 		delay_ms(2);
 	}
 }
