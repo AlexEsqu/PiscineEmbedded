@@ -1,9 +1,9 @@
 #include "libalex_avr.h"
 
-// You need to write a program that displays a number on the rightmost digit.
-// • This number should increment every second.
-// • When the number exceeds 9, it should return to 0.
+// Now let’s focus on the 7-segment display.
+// • You need to write a program that displays "2" on the rightmost digit.
 // • The other 3 digits should not be lit.
+
 
 // Ressource : LED SEGMENT DATASHEET
 // https://jlc-prod-smt.oss-eu-central-1.aliyuncs.com/smtDataManualFile/8588946567709798400-C325426.pdf?response-content-disposition=attachment%3B%20filename%3DC325426.pdf%3B%20filename%2A%3DUTF-8%27%27C325426.pdf&x-oss-date=20260503T125416Z&x-oss-expires=1800&x-oss-security-token=CAISgAN1q6Ft5B2yfSjIr5rsKOmApelnwpiJVH6AgHglNOBEvKLguzz2IHhMdHJsAOodtv0%2FmmhT6PkclqRLcbhpcmfjV%2BZHzLB8qcdTphN34J7b16cNrbH4M4H6aXeirtuwDsz9SNTCALjPD3nPii50x5bjaDymRCbLGJaViJlhHLN1Ow6jdmhpCctxLAlvo9NgFxm3D%2Fu2NQPwiWf9FVdhvhEG6Vly8qOi2MaRmFy8yFTx0b0SvJ%2BjYMrmPctoN9JnSdC5mfdzau3a1TJ84gRD0a5wkaVA1zbDs5bfISEIuUzebreLqY03dV4mOvdqIcMe8qigz88fk%2FfIioH6xyxKOexoSCnFTOiiupCcQLPyao9jLu6iayqViY7QaIOTqQohZmkAMwVOasAsI3Ngh4zF97Qt0cVNkXO9gWfLI8DtuMleWqruR9Zb7nSgc5lCkRRYwGs1287ugXlSQzo890KPDAEovaKCnZ2ZSfh7Y4sNknI6i%2Bfc2Se2MIkIGuVbMKKWD5sagAF%2FNUlhupkevdpz7wsP85W2zneTIQfwrt1OsNwApRT%2B50IWENMYnjjlhpwDveDU8zMPteqm5IoW%2Bm%2BQMIqDS84PBH1ke%2BsNJMEivJ4jVBr90wuKb%2FGBMQn122e5PhJQwBPonE1DWnRAP8TBiMsK1o9I4GKuPC15N7Qsji8Do3BfQCAA&x-oss-signature-version=OSS4-HMAC-SHA256&x-oss-credential=STS.NYYcS4H6FuZbVX1dxp8ohSgKY%2F20260503%2Feu-central-1%2Foss%2Faliyun_v4_request&x-oss-signature=80fa65dd86c809ea23e84425a30bdaff1bee66c9c1c7a8b765ac0e4b5a90e39d
@@ -75,10 +75,10 @@ typedef enum
 
 typedef enum
 {
-	RIGHTMOST_DIGIT	= 0b00111111,
-	RIGHTMID_DIGIT	= 0b00000110,
-	LEFTMID_DIGIT	= 0b01011011,
-	LEFTMOST_DIGIT	= 0b01001111,
+	RIGHTMOST_DIGIT	= (~(1 << TOF_CA_1)),
+	RIGHTMID_DIGIT	= (~(1 << TOF_CA_2)),
+	LEFTMID_DIGIT	= (~(1 << TOF_CA_3)),
+	LEFTMOST_DIGIT	= (~(1 << TOF_CA_4)),
 } e_segment_pos;
 
 void	pca_write(e_pca_register_bytes reg, uint8_t byte)
@@ -96,6 +96,24 @@ void	pca_write(e_pca_register_bytes reg, uint8_t byte)
 	i2c_write(byte);
 
 	i2c_stop();
+}
+
+void	pca_write_FAST(e_pca_register_bytes reg, uint8_t byte1, uint8_t byte2)
+{
+	i2c_start();
+
+	// ADDRESS byte (cf p.6 PCA9555 datasheet)
+	// Decide to address to the PCA expander
+	i2c_write(PCA_ADDRESS << 1 | 0);
+
+	// COMMAND byte (cf p.6 PCA9555 datasheet)
+	// Decide to address a specific register in the expander
+	i2c_write(reg);
+
+	// using auto swqithc to write to the next register (OUTPUT0 > OUTPUT1 for ex)
+	i2c_write(byte1);
+
+	i2c_write(byte2);
 }
 
 uint8_t	pca_read(e_pca_register_bytes reg)
@@ -118,7 +136,15 @@ uint8_t	pca_read(e_pca_register_bytes reg)
 
 	uint8_t result = i2c_read_nack();
 
+	// uart_printstr("After read: ");
+	// uart_printhex(getI2cStatusCode());
+	// uart_printstr("\r\n");
+
 	i2c_stop();
+
+	// uart_printstr("Result: ");
+	// uart_printhex(result);
+	// uart_printstr("\r\n");
 
 	return result;
 }
@@ -130,15 +156,29 @@ int main()
 	uart_init();
 
 	// configurating the switch (IO0_0) as input, others are output
-	pca_write(CONFIGURATION_PORT_0, 0b00000001);
+	pca_write(CONFIGURATION_PORT_0, 0b00001111);
 
 	// configurating all PORT_1 as output
 	pca_write(CONFIGURATION_PORT_1, 0b00000000);
 
+	i2c_start();
+
+	// ADDRESS byte (cf p.6 PCA9555 datasheet)
+	// Decide to address to the PCA expander
+	i2c_enter_master_transmitter(PCA_ADDRESS);
+
 	while (1)
 	{
-		pca_write(OUTPUT_PORT_0, (~(1 << TOF_CA_1)));
-		pca_write(OUTPUT_PORT_1, SEG_TWO);
-		delay_ms(50);
+		pca_write_FAST(OUTPUT_PORT_0, RIGHTMOST_DIGIT, SEG_FOUR);
+		delay_ms(10);
+
+		pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, SEG_TWO);
+		delay_ms(10);
+
+		// pca_write_FAST(OUTPUT_PORT_0, LEFTMID_DIGIT, 0b00000000);
+		delay_ms(2);
+
+		// pca_write_FAST(OUTPUT_PORT_0, (uint8_t)LEFTMOST_DIGIT, 0b00000000);
+		delay_ms(2);
 	}
 }
