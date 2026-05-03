@@ -115,8 +115,6 @@ void		i2c_renew_start(void);
 void		i2c_enter_master_receiver(uint8_t address);
 void		i2c_enter_master_transmitter(uint8_t address);
 
-
-
 // ADC
 
 void		adc_init();

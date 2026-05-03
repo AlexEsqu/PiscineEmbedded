@@ -6,7 +6,7 @@
 
 # define PCA_ADDRESS 0b0100000
 
-uint16_t			g_counter = 0;
+uint16_t			g_counter = 9980;
 
 typedef enum
 {
@@ -186,7 +186,7 @@ void	displayNumOnSegment(uint16_t num, e_segmented_digit* array)
 void __attribute__((signal)) __vector_11 (void)
 {
 	g_counter++;
-	if (g_counter == 9999)
+	if (g_counter > 9999)
 		g_counter = 0;
 }
 
