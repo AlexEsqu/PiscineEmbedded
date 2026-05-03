@@ -8,8 +8,6 @@ void	spi_init()
 	/* Set MOSI and SCK output, all others input */
 	DDRB = (1<<PB2) | (1<<PB3) | (1 << PB5);
 
-	PORTB |= (1 << PB2);
-
 	/* Enable SPI, Master, set clock rate fck/16 */
 	SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR0);
 	// SPDR |=(1<<SPI2X);
