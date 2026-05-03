@@ -1,11 +1,12 @@
 #include "libalex_avr.h"
 
-// You need to write a program that displays a number on the rightmost digit.
+// • You need to write a program that displays a number on all 4 digits.
 // • This number should increment every second.
-// • When the number exceeds 9, it should return to 0.
-// • The other 3 digits should not be lit
+// • When the number exceeds 9999, it should return to 0.
 
 # define PCA_ADDRESS 0b0100000
+
+uint16_t			g_counter = 0;
 
 typedef enum
 {
@@ -58,6 +59,7 @@ typedef enum
 
 typedef enum
 {
+	// SEG_NONE	= 0b00000000,
 	SEG_ZERO	= 0b00111111,  // A,B,C,D,E,F
 	SEG_ONE		= 0b00000110,  // B,C
 	SEG_TWO		= 0b01011011,  // A,B,D,E,G
@@ -72,10 +74,10 @@ typedef enum
 
 typedef enum
 {
-	RIGHTMOST_DIGIT	= 0b00111111,
-	RIGHTMID_DIGIT	= 0b00000110,
-	LEFTMID_DIGIT	= 0b01011011,
-	LEFTMOST_DIGIT	= 0b01001111,
+	RIGHTMOST_DIGIT	= (~(1 << TOF_CA_1)),
+	RIGHTMID_DIGIT	= (~(1 << TOF_CA_2)),
+	LEFTMID_DIGIT	= (~(1 << TOF_CA_3)),
+	LEFTMOST_DIGIT	= (~(1 << TOF_CA_4)),
 } e_segment_pos;
 
 void	pca_write(e_pca_register_bytes reg, uint8_t byte)
@@ -97,10 +99,17 @@ void	pca_write(e_pca_register_bytes reg, uint8_t byte)
 
 void	pca_write_FAST(e_pca_register_bytes reg, uint8_t byte1, uint8_t byte2)
 {
+	i2c_start();
+
+	// ADDRESS byte (cf p.6 PCA9555 datasheet)
+	// Decide to address to the PCA expander
+	i2c_write(PCA_ADDRESS << 1 | 0);
+
 	// COMMAND byte (cf p.6 PCA9555 datasheet)
 	// Decide to address a specific register in the expander
 	i2c_write(reg);
 
+	// using auto swqithc to write to the next register (OUTPUT0 > OUTPUT1 for ex)
 	i2c_write(byte1);
 
 	i2c_write(byte2);
@@ -139,19 +148,59 @@ uint8_t	pca_read(e_pca_register_bytes reg)
 	return result;
 }
 
+void	displayOnSegment(e_segmented_digit rightmostDigit, e_segmented_digit rightmidDigit,
+		e_segmented_digit leftmidDigit, e_segmented_digit leftmostDigit)
+{
+	pca_write_FAST(OUTPUT_PORT_0, RIGHTMOST_DIGIT, rightmostDigit);
+	delay_ms(2);
+
+	pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, rightmidDigit);
+	delay_ms(2);
+
+	pca_write_FAST(OUTPUT_PORT_0, LEFTMID_DIGIT, leftmidDigit);
+	delay_ms(2);
+
+	pca_write_FAST(OUTPUT_PORT_0, (uint8_t)LEFTMOST_DIGIT, leftmostDigit);
+	delay_ms(2);
+}
+
+void	displayNumOnSegment(uint16_t num, e_segmented_digit* array)
+{
+	e_segmented_digit buff[4];
+	uint8_t	digitPos = 0;
+
+	while (num > 0 && digitPos < 4)
+	{
+		buff[digitPos++] = array[num % 10];
+		num /= 10;
+	}
+
+	while (digitPos < 4)
+	{
+		buff[digitPos++] = SEG_ZERO;
+	}
+
+	displayOnSegment(buff[3], buff[2], buff[1], buff[0]);
+}
+
+void __attribute__((signal)) __vector_11 (void)
+{
+	g_counter++;
+	if (g_counter == 9999)
+		g_counter = 0;
+}
 
 int main()
 {
 	i2c_init();
 	uart_init();
 
-	static const uint8_t digits[10] = {
-		SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR,
-		SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE
-	};
+	SREG |= (1 << 7);
+
+	TIMSK1 |= (1 << OCIE0A);
 
 	// configurating the switch (IO0_0) as input, others are output
-	pca_write(CONFIGURATION_PORT_0, 0b00000001);
+	pca_write(CONFIGURATION_PORT_0, 0b00001111);
 
 	// configurating all PORT_1 as output
 	pca_write(CONFIGURATION_PORT_1, 0b00000000);
@@ -162,13 +211,14 @@ int main()
 	// Decide to address to the PCA expander
 	i2c_enter_master_transmitter(PCA_ADDRESS);
 
+	e_segmented_digit	array[] = {SEG_ZERO, SEG_ONE, SEG_TWO, SEG_THREE, SEG_FOUR, SEG_FIVE, SEG_SIX, SEG_SEVEN, SEG_EIGHT, SEG_NINE};
+
+	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_DISCONNECT, CMP_DISCONNECT);
+	OCR1A = OCR1A = ((F_CPU / (1024UL * 1UL)) - 1UL);
+	timer1_launch(CLK_DIV1024);
+
 	while (1)
 	{
-		for (int i = 0; i <= 9; i++)
-		{
-			pca_write(OUTPUT_PORT_0, (~(1 << TOF_CA_1)));
-			pca_write(OUTPUT_PORT_1, digits[i]);
-			delay_ms(1000);
-		}
+		displayNumOnSegment(g_counter, array);
 	}
 }
