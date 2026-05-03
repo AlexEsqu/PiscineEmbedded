@@ -111,39 +111,12 @@ void	parseAndExecuteCommand(char* buffer, int* bufferIndex)
 	}
 }
 
-// INTERRUPT ON TIMER1 A EVERY 10ms
-// Using timer1 since biggest and can count per seconds
-void	__attribute__((signal)) __vector_timer1_compa(void)
-{
-	if (g_ledConfig.isRainbow)
-	{
-		g_ledConfig.rainbowPos++;
-		wheel(g_ledConfig.rainbowPos);
-	}
-}
-
-void	setGeneralTimer()
-{
-	// Set up timer1
-	timer1_init(TIMER_MODE_CTC, TOP_OCRA, CMP_DISCONNECT, CMP_DISCONNECT);
-
-	// set timer1 TOP to 100 ms
-	OCR1A = (F_CPU / (1024UL * 10UL)) - 1;
-
-	// set timer1 to compare to the TOP value in OCR1A
-	TIMSK1 |= (1 << OCIE1A);
-
-	// launch by setting up the timer1 prediviser
-	timer1_launch(CLK_DIV1024);
-}
 
 int main()
 {
 	spi_init();
 	uart_init();
-	// setGeneralTimer();
 
-	// SREG |= (1 << 7);
 	e_state state = PROMPT;
 	char	buffer[BUFFER_SIZE];
 	int	bufferIndex = 0;
@@ -180,5 +153,6 @@ int main()
 		spi_send_all_led_frames(g_ledConfig.colorD6, g_ledConfig.colorD7, g_ledConfig.colorD8);
 	}
 }
+
 
 

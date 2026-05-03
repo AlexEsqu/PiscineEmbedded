@@ -4,9 +4,10 @@
 // hexdump format.
 // 00000000 57 68 61 74 20
 
+// since EEPROM Addresses are defined over 10bits, unlikely to go higher...
 #define EEPROM_SIZE 1024
 
-
+// Using the functions defined in the datasheet p.35
 unsigned char EEPROM_read(unsigned int uiAddress)
 {
 	/* Wait for completion of previous write */

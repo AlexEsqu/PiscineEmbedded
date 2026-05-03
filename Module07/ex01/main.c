@@ -117,7 +117,7 @@ char	isValidFormat(char* buffer)
 			return 0;
 	}
 
-	if (buffer[2] != ' ' && buffer[3] != ' ' && buffer[4] != ' ')
+	if (buffer[1] != ' ' && buffer[2] != ' ' && buffer[3] != ' ' && buffer[4] != ' ')
 		return 0;
 
 	return 1;

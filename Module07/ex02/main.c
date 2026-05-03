@@ -104,7 +104,7 @@ e_node_slots	findCurrentNode()
 	{
 		node_t potential_node = readNode(slot);
 
-		if (potential_node.magicNumber == MAGIC_NUMER && verifyChecksum16(&potential_node))
+		if (potential_node.magicNumber == MAGIC_NUMER)
 			return slot;
 	}
 	return NONE;
@@ -256,9 +256,12 @@ void	modifyNode(command_content_t* command)
 void	printStatus()
 {
 	e_node_slots nodeSlot = findCurrentNode();
+	node_t potential_node = readNode(nodeSlot);
 	if (nodeSlot == NONE)
 		uart_printstr("Node unconfigured\r\n");
 	else if (nodeSlot == ALL_CORRUPTED)
+		uart_printstr("CRITICAL: Data corruption detected!\r\n");
+	else if (!verifyChecksum16(&potential_node))
 		uart_printstr("CRITICAL: Data corruption detected!\r\n");
 	else
 		printNode(nodeSlot);
