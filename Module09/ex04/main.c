@@ -20,14 +20,14 @@ typedef enum
 
 typedef enum
 {
-	VAL_SWITCH_3	= 0b0000'0001,
-	VAL_LED_D11		= 0b0000'0010,
-	VAL_LED_D10		= 0b0000'0100,
-	VAL_LED_D9		= 0b0000'1000,
-	VAL_CA_1		= 0b0001'0000,
-	VAL_CA_2		= 0b0010'0000,
-	VAL_CA_3		= 0b0100'0000,
-	VAL_CA_4		= 0b1000'0000
+	VAL_SWITCH_3	= 0b00000001,
+	VAL_LED_D11		= 0b00000010,
+	VAL_LED_D10		= 0b00000100,
+	VAL_LED_D9		= 0b00001000,
+	VAL_CA_1		= 0b00010000,
+	VAL_CA_2		= 0b00100000,
+	VAL_CA_3		= 0b01000000,
+	VAL_CA_4		= 0b10000000
 } e_pca_register0_bits;
 
 typedef enum
@@ -71,10 +71,10 @@ typedef enum
 
 typedef enum
 {
-	RIGHTMOST_DIGIT	= (~(1 << TOF_CA_1)),
-	RIGHTMID_DIGIT	= (~(1 << TOF_CA_2)),
-	LEFTMID_DIGIT	= (~(1 << TOF_CA_3)),
-	LEFTMOST_DIGIT	= (~(1 << TOF_CA_4)),
+	LEFTMOST_DIGIT	= (~(1 << TOF_CA_1)),
+	LEFTMID_DIGIT	= (~(1 << TOF_CA_2)),
+	RIGHTMID_DIGIT 	= (~(1 << TOF_CA_3)),
+	RIGHTMOST_DIGIT	= (~(1 << TOF_CA_4)),
 } e_segment_pos;
 
 void	pca_write(e_pca_register_bytes reg, uint8_t byte)
@@ -165,16 +165,16 @@ int main()
 
 	while (1)
 	{
-		pca_write_FAST(OUTPUT_PORT_0, RIGHTMOST_DIGIT, SEG_FOUR);
+		pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, SEG_FOUR);
 		delay_ms(2);
 
-		pca_write_FAST(OUTPUT_PORT_0, RIGHTMID_DIGIT, SEG_TWO);
+		pca_write_FAST(OUTPUT_PORT_0, (uint8_t)RIGHTMOST_DIGIT, SEG_TWO);
 		delay_ms(2);
 
 		// pca_write_FAST(OUTPUT_PORT_0, LEFTMID_DIGIT, SEG_SIX);
 		delay_ms(2);
 
-		// pca_write_FAST(OUTPUT_PORT_0, (uint8_t)LEFTMOST_DIGIT, SEG_EIGHT);
+		// pca_write_FAST(OUTPUT_PORT_0, LEFTMOST_DIGIT, SEG_EIGHT);
 		delay_ms(2);
 	}
 }

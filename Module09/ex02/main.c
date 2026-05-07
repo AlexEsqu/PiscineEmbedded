@@ -21,14 +21,14 @@ typedef enum
 
 typedef enum
 {
-	VAL_SWITCH_3	= 0b0000'0001,
-	VAL_LED_D11		= 0b0000'0010,
-	VAL_LED_D10		= 0b0000'0100,
-	VAL_LED_D9		= 0b0000'1000,
-	VAL_CA_1		= 0b0001'0000,
-	VAL_CA_2		= 0b0010'0000,
-	VAL_CA_3		= 0b0100'0000,
-	VAL_CA_4		= 0b1000'0000
+	VAL_SWITCH_3	= 0b00000001,
+	VAL_LED_D11		= 0b00000010,
+	VAL_LED_D10		= 0b00000100,
+	VAL_LED_D9		= 0b00001000,
+	VAL_CA_1		= 0b00010000,
+	VAL_CA_2		= 0b00100000,
+	VAL_CA_3		= 0b01000000,
+	VAL_CA_4		= 0b10000000
 } e_pca_register0_bits;
 
 typedef enum
@@ -134,7 +134,7 @@ int main()
 
 	while (1)
 	{
-		pca_write(OUTPUT_PORT_0, (~(1 << TOF_CA_1)));
+		pca_write(OUTPUT_PORT_0,  (uint8_t)~(1 << TOF_CA_4));
 		pca_write(OUTPUT_PORT_1, SEG_TWO);
 		delay_ms(50);
 	}
